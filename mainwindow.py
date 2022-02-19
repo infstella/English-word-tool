@@ -1,3 +1,5 @@
+import os
+os.chdir('../')
 from ALLwindow import *
 
 notebook.add(frame1, text="单词列表")
