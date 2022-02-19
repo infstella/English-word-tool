@@ -123,11 +123,11 @@ Ainp4v= StringVar()
 
 def frame1_enterevent(event):
     Arun1()
-    Ainp1.focus_set()
     Ainp1v.set('')
     Ainp2v.set('')
     Ainp3v.set('')
     Ainp4v.set('')
+    Ainp1.focus_set()
 
 Alb1 = Label(frame1, textvariable=Av,font=font)
 Alb1.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
