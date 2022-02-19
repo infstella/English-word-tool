@@ -1,4 +1,3 @@
 # English-word-tool
-an easy program
+# 背单词小工具
 
-testtest
