@@ -6,20 +6,16 @@ from WordPattern import *
 from tkinter import ttk
 from unit import *
 from tkinter import scrolledtext
-import os,sys
-import json
 
 start()
 upgrade.Up_start()
 root=Tk()
-root.geometry('1920x1080')#1024x768
+root.geometry('1920x1080')
 notebook=ttk.Notebook(root)
 CACHE_NUM=0
 frame1 = Frame(root)
 frame2 = Frame(root)
 frame3 = Frame(root)
-
-#savejson({'Old':'20','New':'20','wordlist':'1,2,3'})
 setting=loadjson()
 
 global tlearn
@@ -35,15 +31,7 @@ testword=None
 state=0
 state2=0
 showL=['英文','中文','创建时间','上次遗忘时间','记忆率','词性']
-
-
-
 wordlistname=[]
-#assd=os.getcwd()+'//wordlist'
-'''for roott, dirs, files in os.walk((os.getcwd()+'//wordlist')):
-    wordlistname+=files #os.walk()所在目录的所有非目录文件名
-    a=dirs
-    a=roott'''
 wordlistname=get_all_file()
 
 
@@ -53,7 +41,6 @@ wordlistname=get_all_file()
 def Arun1(event=None):
     TotalList[0].append(Word(words=Ainp1.get(),chinese=Ainp2.get(),create_time=today_date,forget_time=today_date,POS=Ainp4.get()))
     Av.set('设置成功!')
-    #v.set(inp1.get()+str(inp2.get())+str(today_date)+str(today_date))
     Aflashtext()
 
 def Arun2():
@@ -63,18 +50,13 @@ def Arun2():
 def Aflashtext():
     for item in tree.get_children():
           tree.delete(item)
-        #tree.insert(END,'\n'+'NO. '+str(n)+'\n'+'-'*20+'\n')
     for i in TotalList[0]:          
         tree.insert("", TotalList[0].index(i), text=str(TotalList[0].index(i)), values=(str(i.words), str(i.chinese), str(i.create_time), str(i.forget_time),str(round(i.remember_rate,2)),str(i.POS)))
-            #txt.insert(END,(str(TotalList[n].index(i))+showL[0]+str(i.words)+showL[1]+str(i.chinese)+showL[2]+str(i.create_time)+showL[3]+str(i.forget_time)+showL[4]+str(round(i.remember_rate,2))+'  词性: '+str(i.POS)+'\n'))
 
 
 def Ago(x):
     global TotalList
     TotalList=loadfileP(Acomboxlist.get())
-    #with open('wordlist//'+Acomboxlist.get(), 'rb') as fp:
-    #    TotalList = pickle.load(fp)
-        #print(len(TotalList[1]))
     print('event:选择列表')
     Av4.set('版本:'+TotalList[1]['version'])
     Aflashtext()
@@ -92,14 +74,6 @@ def Asave():
     Av.set('保存成功')
     Aflashtext()
 
-#def addlist():
-#    TotalList.append([Word(words='hello',chinese='你好',create_time=today_date,forget_time=today_date,POS='v')])
-#    Aflashtext()
-
-#def poplist():
-#    TotalList.pop(int(Ainp3.get()))
-#    Aflashtext()
-
 def AEdit():
     if Ainp2.get()!='':
         TotalList[0][int(Ainp3.get())].chinese=Ainp2.get()
@@ -112,10 +86,13 @@ def treeclick(event):
     item = tree.selection() #'I001'、'I002'
     if item:
         txt = int(tree.item(item[0],'text'))
-    Ainp2v.set(TotalList[0][txt].chinese)
-    Ainp1v.set(TotalList[0][txt].words)
-    Ainp4v.set(TotalList[0][txt].POS)
-    Ainp3v.set(txt)
+    try:
+        Ainp2v.set(TotalList[0][txt].chinese)
+        Ainp1v.set(TotalList[0][txt].words)
+        Ainp4v.set(TotalList[0][txt].POS)
+        Ainp3v.set(txt)
+    except UnboundLocalError:
+        print('Message:UnboundLocalError in treeclick()')
     
 def AFindtext():
     a=Ainp1.get()
@@ -234,16 +211,9 @@ tree["columns"] = (showL[0], showL[1], showL[2], showL[3], showL[4], showL[5])
 
 tree.bind('<ButtonRelease-1>',treeclick)
 
-#tree.column('N', width=50)
-#tree.heading('N', text=TotalList[1]['version'])
 for i in range(6):
     tree.column(showL[i], width=100)
     tree.heading(showL[i], text=showL[i])        # #设置显示的表头名
-
-
-
-#txt = scrolledtext.ScrolledText(monty, width=30, height=5, wrap=WORD,font=font)
-#txt.place(relx=0, rely=0, relwidth=1, relheight=0.35)
 
 
 
@@ -273,8 +243,6 @@ def cw():
         return
     for i in d:
         c=loadfileP(i)
-        #with open('wordlist//'+i, 'rb') as fp:  # 把 t 对象从文件中读出来，并赋值给 t2
-        #    c = pickle.load(fp)
         a=a+c[0]
     tlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a) 
     tlearn+=chooseWords(int(setting['New']),CHOOSE_NEW,a)
