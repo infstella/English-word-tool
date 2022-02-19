@@ -1,10 +1,13 @@
-import imp
 import threading
-from playsound import playsound 
+#from playsound import playsound
+#import Play_mp3 
 import time,pickle,json,os
+
+import pygame
 from WordPattern import *
 import sys
 from Youdao_Pronunciation import youdao
+
 #from win32com.client import constants
 #import win32com.client 
 #import pyttsx3
@@ -276,7 +279,16 @@ class SpeakWords_T (threading.Thread):
         self.words = words
     def run(self):
         #playsound(yd.down(self.words))
-        playsound(yd.down(self.words.replace(' ','')))
+        soundPath=yd.down(str(self.words).replace(' ',''))
+        #open(soundPath)
+        #os.system(soundPath)
+        pygame.mixer.init()                           # 初始化
+        track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
+        pygame.mixer.music.play()
+        time.sleep(2)
+        pygame.mixer.music.stop()
+        #由于未知原因，某些特殊音频无法在python中播放，已查明的有EN-individual.mp3
+        #Play_mp3.play(soundPath)
             #engine.say(self.words) 
             #engine.runAndWait()
             #engine.stop()
@@ -293,7 +305,7 @@ def SpeakWords(words):
     # On linux make sure that 'espeak' and 'ffmpeg' are installed
     #engine.save_to_file('Hello World', 'test.mp3')
     #engine.runAndWait()	
-
+#SpeakWords('individual')
 '''def SpeakWords_T(words):
     engine.say(words)
     engine.runAndWait()
