@@ -1,10 +1,13 @@
+import imp
 import threading
+from playsound import playsound 
 import time,pickle,json,os
 from WordPattern import *
 import sys
-from win32com.client import constants
-import win32com.client
-import pyttsx3
+from Youdao_Pronunciation import youdao
+#from win32com.client import constants
+#import win32com.client 
+#import pyttsx3
 #Listnum=1
 
 print('456')
@@ -19,21 +22,39 @@ CHOOSE_NORMAL=0
 CHOOSE_OLD=1
 CHOOSE_NEW=2
 LOCAL_SOFTWARE_VERSION='v0.1'
-engine = pyttsx3.init() # object creation
-def checkinit():
-    try:
-        f = open('config.json', 'r')
-    except:
-        x={"Old": "0", "New": "0", "wordlist": "", "time": 0}
-        open('config.json','w')
-        b = json.dumps(x)
-        f2 = open('config.json', 'w')
-        f2.write(b)
-        f2.close()
+yd=youdao()
+
+#yd=None
+#engine = pyttsx3.init() # object creation
+
+class Logger(object):
+    def __init__(self, fileN='Terminal.log'):
+        self.terminal = sys.stdout
         
-        os.mkdir("wordlist")
-checkinit()
-    
+        try:
+            self.log = open(fileN, 'a')
+        except FileNotFoundError:
+            open(fileN,'w')
+            self.log = open(fileN, 'a')
+        self.messageCache=''
+        self.log.write('\n\n\n')
+
+    def write(self, message):
+        '''print实际相当于sys.stdout.write'''
+        self.terminal.write(message)
+        nowTime=str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        if message!='\n':
+            self.messageCache+=message
+        else:
+            self.log.write(nowTime+':    '+self.messageCache+'\n')
+            self.messageCache=''
+
+    def flush(self):
+        pass
+
+
+sys.stdout = Logger()#'G:/2.0/test.txt'
+
   
 '''def dec86400(num):
     mid=[]
@@ -54,12 +75,29 @@ def creat():
     TotalList[0].append(Word(words='hello',chinese='哈喽',create_time=today_date,forget_time='2021-12-15'))
     TotalList[0].append(Word(words='world',chinese='世界',create_time=today_date,forget_time='2021-12-16'))
 
-def loadjson():
-    f = open('config.json', 'r')
+def loadjson(json_name='config.json'):
+    f = open(json_name, 'r')
     content = f.read()
     a = json.loads(content)
     f.close()
     return a
+
+def savejson(x,json_name='config.json'):
+    b = json.dumps(x,sort_keys=True, indent=4)
+    f2 = open(json_name, 'w')
+    f2.write(b)
+    f2.close()
+
+def PrintLog(content,IsTime=True,logName='Default.log',IsReflash=False):
+    if IsReflash:
+        f2 = open(logName, 'w')
+        f2.write('')
+        f2.close()
+
+    f2 = open(logName, 'a')
+    nowTime=str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+    f2.write(nowTime+':    '+str(content)+'\n')
+    f2.close()
 
 def loadfile(filename):
     global TotalList
@@ -113,6 +151,27 @@ def dSTN(str1):#StrdateToNumdate
     return dec86400P(timeStamp)
 a=dSTN('2021-12-18')
 
+def checkinit():
+    try:
+        f = open('config.json', 'r')
+    except:
+        x={"Old": "0", "New": "0", "wordlist": "", "time": 0}
+        open('config.json','w')
+        b = json.dumps(x)
+        f2 = open('config.json', 'w')
+        f2.write(b)
+        f2.close()
+        os.mkdir("wordlist")
+    try:
+        f = open('remember_weight.json', 'r')
+    except:
+        x={"NewWordsList": 1}
+        open('remember_weight.json','w')
+        savejson(x,json_name='remember_weight.json')
+checkinit()
+
+
+
 
 timeStamp = time.time()
 time_time = time.strftime('%Y-%m-%d', time.localtime(timeStamp))
@@ -155,11 +214,7 @@ def start():
     Speak_init()
     #[name,wl]
 
-def savejson(x):
-    b = json.dumps(x)
-    f2 = open('config.json', 'w')
-    f2.write(b)
-    f2.close()
+
 
 def savefile():
     with open('wordlist//'+filename+'.wl', 'w+b') as fp: # 把 t 对象存到文件中
@@ -179,15 +234,29 @@ def checkforget():
     t=int(config['time'])
     d=config['wordlist']
     d=list(d.split(','))
+    
+    
+
     if timedate != t and config['wordlist']!='':
+        PrintLog('',logName='checkforget.log',IsReflash=True)
         config['time']=timedate
-        for i in d:
-            #with open('wordlist//'+i, 'rb') as fp:  # 把 t 对象从文件中读出来，并赋值给 t2
-            c=loadfileP(i)
-            #c = pickle.load(fp)
-                #for ii in c:
+        for i in d:#i: file name
+            
+            c=loadfileP(i)#c:file object
+            k=loadjson(json_name='remember_weight.json')
+            try:
+                weight=k[i]#k: extra weight
+            except KeyError:
+                k[i]=1
+                weight=1
+                savejson(k,json_name='remember_weight.json')
             for iii in c[0]:
-                iii.remember_rate=iii.remember_rate*f(timedate-dSTN(iii.forget_time))
+                cachenum=iii.remember_rate
+                d= 1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )
+                iii.remember_rate=iii.remember_rate*  1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )#update remenber rate
+                if iii.remember_rate<0:
+                    iii.remember_rate=0
+                PrintLog((str(iii.words)+' '+str(d)+': '+str(cachenum)+'-->'+str(iii.remember_rate)),logName='checkforget.log')
             savefileP(i,c)
             #with open('wordlist//'+i, 'w+b') as fp: # 把 t 对象存到文件中
             #    pickle.dump(c, fp)
@@ -195,22 +264,24 @@ def checkforget():
 
 def Speak_init():
     
-    engine.setProperty('rate', 125)     # setting up new voice rate #init=200
+    
+    '''engine.setProperty('rate', 125)     # setting up new voice rate #init=200
     engine.setProperty('volume',1.0)    # setting up volume level  between 0 and 1 #init=1
     voices = engine.getProperty('voices')       #getting details of current voice
     #engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
-    engine.setProperty('voice', voices[1].id)   #changing index, changes voices. 1 for female
+    engine.setProperty('voice', voices[1].id)   #changing index, changes voices. 1 for female'''
 class SpeakWords_T (threading.Thread):
     def __init__(self, words):
         threading.Thread.__init__(self)
         self.words = words
     def run(self):
-        try:
-            engine.say(self.words)
-            engine.runAndWait()
-            engine.stop()
-        except:
-            print('too quickly')
+        #playsound(yd.down(self.words))
+        playsound(yd.down(self.words.replace(' ','')))
+            #engine.say(self.words) 
+            #engine.runAndWait()
+            #engine.stop()
+        #except:
+        #    print('too quickly')
         
 
 
@@ -228,11 +299,11 @@ def SpeakWords(words):
     engine.runAndWait()
     engine.stop()'''
 
-def SpeakWordsOLD(words):
+'''def SpeakWordsOLD(words):
     speaker = win32com.client.Dispatch("SAPI.SpVoice")
     try:
         speaker.Speak(words)
     except:
         if sys.exc_type is EOFError:
-            sys.exit()
+            sys.exit()'''
 #forget()
