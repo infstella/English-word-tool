@@ -400,3 +400,4 @@ FodyWeavers.xsd
 #pyinstaller
 build/
 mainwindow.spec
+English-word-tool启动器.spec
