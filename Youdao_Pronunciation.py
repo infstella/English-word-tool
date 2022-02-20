@@ -87,8 +87,8 @@ class youdao():
             # 下载到目标地址
             urllib.request.urlretrieve(self._url, filename=self._filePath)
             print('%s.mp3 下载完成' % self._word)
-        else:
-            print('已经存在 %s.mp3, 不需要下载' % self._word)
+        #else:
+            #print('已经存在 %s.mp3, 不需要下载' % self._word)
 
         # 返回声音文件路径
         return self._filePath

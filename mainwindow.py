@@ -47,11 +47,11 @@ def jiemian2():
 #root.geometry('800x600')#窗体大小
 #root.resizable(False, False)#固定窗体
 def Fhelp():
-    print('p')
+    #print('p')
     jiemian1()
     
 def Fabout():
-    print('p')
+    #print('p')
     jiemian2()
 
 f = Menu(root)#创建根菜单
@@ -69,4 +69,5 @@ root['menu'] = f#顶级菜单关联根窗体
 #f.add_cascade(label='编辑',menu=f2)
 f.add_cascade(label='帮助',command=Fhelp)
 f.add_cascade(label='关于',command=Fabout)
+SpeakWords('individual')
 root.mainloop()
