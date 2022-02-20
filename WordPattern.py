@@ -1,11 +1,12 @@
 class Word():
-    def __init__(self,words,chinese,create_time,forget_time,POS='U',remember_rate=0):#POS:U=unknow,P=phrase
+    def __init__(self,words,chinese,create_time,forget_time,POS='U',remember_rate=0,wordlist=''):#POS:U=unknow,P=phrase
         self.words=words
         self.create_time=create_time
         self.chinese=chinese
         self.forget_time=forget_time
         self.remember_rate=remember_rate
         self.POS=POS
+        self.wordlist=wordlist
 
     def getwords(self):
         return self.words
@@ -18,9 +19,14 @@ class Word():
 
     def getPOS(self):
         return self.POS
+    
+    def getwordlist(self):
+        return self.wordlist
 
     def setforget_time(self,forget_time):
         self.forget_time=forget_time
+
+
 
 
 '''a=chooseWords(2)

@@ -405,3 +405,6 @@ English-word-tool.spec
 
 #custom project
 test.py
+config.json
+wordlist/
+remember_weight.json

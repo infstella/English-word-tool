@@ -57,7 +57,7 @@ def Aflashtext():
 def Ago(x):
     global TotalList
     TotalList=loadfileP(Acomboxlist.get())
-    print('event:选择列表')
+    #print('event:选择列表')
     Av4.set('版本:'+TotalList[1]['version'])
     Aflashtext()
 
@@ -291,20 +291,25 @@ Alist=[]
 
 def start():
     global Alist
-    
-    
     Alist=a
 def Afind(x):
-    d=setting['wordlist']
-    d=list(d.split(','))
-    for i in d:
+    #d=setting['wordlist']
+    #d=list(d.split(','))
+    
+    list1=loadfileP(x.wordlist)
+    for i in list1[0]:
+        if i.words==x.words:
+            list1[0][list1[0].index(i)]=x
+            i=x
+    savefileP(x.wordlist,list1)
+    '''for i in d:
         T=loadfileP(i)
         #with open('wordlist//'+i, 'rb') as fp:  # 把 t 对象从文件中读出来，并赋值给 t2
         #    T = pickle.load(fp)
         for ii in T[0]:
             if ii.words==x.words:
                 T[0][T[0].index(ii)]=x
-        savefileP(i,T)
+        savefileP(i,T)'''
         #with open('wordlist//'+i, 'w+b') as fp: # 把 t 对象存到文件中
         #    pickle.dump(T, fp)
             
