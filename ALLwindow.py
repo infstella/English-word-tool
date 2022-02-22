@@ -39,7 +39,7 @@ wordlistname=get_all_file()
 
 
 def Arun1(event=None):
-    TotalList[0].append(Word(words=Ainp1.get(),chinese=Ainp2.get(),create_time=today_date,forget_time=today_date,POS=Ainp4.get()))
+    TotalList[0].append(Word(words=Ainp1.get(),chinese=Ainp2.get(),create_time=today_date,forget_time=today_date,POS=Ainp4.get(),wordlist=Acomboxlist.get()))
     Av.set('设置成功!')
     Aflashtext()
 
@@ -92,7 +92,7 @@ def treeclick(event):
         Ainp4v.set(TotalList[0][txt].POS)
         Ainp3v.set(txt)
     except UnboundLocalError:
-        print('Message:UnboundLocalError in treeclick()')
+        print('Info:UnboundLocalError in treeclick()')
     
 def AFindtext():
     a=Ainp1.get()
@@ -358,7 +358,7 @@ def Rrun2():
             testword=tlearn[randomnum]
         #print(testword.words)
         Rinp1.delete(0, END)  # 清空输入
-        Rv.set(testword.chinese+'     '+testword.POS)
+        Rv.set(testword.chinese+'     '+testword.POS+'     '+'出自：'+testword.wordlist)
         Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,2))+' 加入时间:'+str(testword.create_time))
         Rv3.set("剩余单词数:"+str(len(tlearn)))
         

@@ -215,6 +215,7 @@ def start():
     checkinit()  
     checkforget()
     Speak_init()
+    ResetWordlist()
     #[name,wl]
 
 
@@ -265,6 +266,15 @@ def checkforget():
             #    pickle.dump(c, fp)
         savejson(config)
 
+def ResetWordlist():
+    wordlistname=get_all_file()
+    for item in wordlistname:
+        list1=loadfileP(item)
+        for it in range(len(list1[0])):
+            list1[0][it].wordlist=item
+        savefileP(item,list1)
+
+
 def Speak_init():
     
     
@@ -282,11 +292,25 @@ class SpeakWords_T (threading.Thread):
         soundPath=yd.down(str(self.words).replace(' ',''))
         #open(soundPath)
         #os.system(soundPath)
-        pygame.mixer.init()                           # 初始化
-        track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
-        pygame.mixer.music.play()
-        time.sleep(2)
-        pygame.mixer.music.stop()
+        try:
+            pygame.mixer.init()                           # 初始化
+            track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
+            pygame.mixer.music.play()
+            time.sleep(2)
+            pygame.mixer.music.stop()
+        except:
+            try:
+                yd.setAccent(0)
+                soundPath=yd.down(str(self.words).replace(' ',''))
+                pygame.mixer.init()                           # 初始化
+                track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
+                pygame.mixer.music.play()
+                time.sleep(2)
+                pygame.mixer.music.stop()
+                yd.setAccent(1)
+            except:
+                print('Info:Cannot Play Sound.Filename:'+self.words)
+        
         #由于未知原因，某些特殊音频无法在python中播放，已查明的有EN-individual.mp3
         #Play_mp3.play(soundPath)
             #engine.say(self.words) 
