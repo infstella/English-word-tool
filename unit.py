@@ -74,9 +74,9 @@ def dec86400P(num):
 #today_date:date ; timedate:calculable  
 def creat():
     global TotalList
-    TotalList=[[],{'version':'v0.1','num_version':1}]
-    TotalList[0].append(Word(words='hello',chinese='哈喽',create_time=today_date,forget_time='2021-12-15'))
-    TotalList[0].append(Word(words='world',chinese='世界',create_time=today_date,forget_time='2021-12-16'))
+    TotalList=[[],{'version':'v0.2','num_version':2}]
+    TotalList[0].append(Word(words='hello',chinese='哈喽',create_time=today_date,forget_time='2021-12-15',wordlist='NewWordsList'))
+    TotalList[0].append(Word(words='world',chinese='世界',create_time=today_date,forget_time='2021-12-16',wordlist='NewWordsList'))
 
 def loadjson(json_name='config.json'):
     f = open(json_name, 'r')
@@ -296,7 +296,7 @@ class SpeakWords_T (threading.Thread):
             pygame.mixer.init()                           # 初始化
             track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
             pygame.mixer.music.play()
-            time.sleep(2)
+            time.sleep(10)
             pygame.mixer.music.stop()
         except:
             try:
@@ -305,7 +305,7 @@ class SpeakWords_T (threading.Thread):
                 pygame.mixer.init()                           # 初始化
                 track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
                 pygame.mixer.music.play()
-                time.sleep(2)
+                time.sleep(10)
                 pygame.mixer.music.stop()
                 yd.setAccent(1)
             except:
@@ -329,7 +329,7 @@ def SpeakWords(words):
     # On linux make sure that 'espeak' and 'ffmpeg' are installed
     #engine.save_to_file('Hello World', 'test.mp3')
     #engine.runAndWait()	
-#SpeakWords('individual')
+
 '''def SpeakWords_T(words):
     engine.say(words)
     engine.runAndWait()

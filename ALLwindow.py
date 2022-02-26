@@ -1,4 +1,5 @@
 global TotalList
+from ast import Expression
 import random
 import upgrade
 from tkinter import *
@@ -6,6 +7,7 @@ from WordPattern import *
 from tkinter import ttk
 from unit import *
 from tkinter import scrolledtext
+from Youdao_Translate import YoudaoTranslate
 
 start()
 upgrade.Up_start()
@@ -17,6 +19,7 @@ frame1 = Frame(root)
 frame2 = Frame(root)
 frame3 = Frame(root)
 setting=loadjson()
+trans=YoudaoTranslate()
 
 global tlearn
 tlearn=[]
@@ -60,10 +63,32 @@ def Ago(x):
     #print('event:选择列表')
     Av4.set('版本:'+TotalList[1]['version'])
     Aflashtext()
-
-def updateTime():
+lastcount=0
+def AupdateTime():
     #v2.set(translate_content_ch(inp1.get()))
-    Alb2.after(5000, updateTime)
+    try:
+        global lastword,lastcount
+        if Ainp1.get()!='' and Ainp1.get()==lastword:
+            lastcount+=1
+        else:
+            lastcount=0
+        if Ainp1.get()!='' and lastcount==2:
+            e=trans.translate(Ainp1.get())[0]
+            f=''
+            for i in e:
+                f+=i.replace('.','')
+                if i != e[-1]:
+                    f+='/'
+            Ainp4v.set(f)
+            d=str(trans.translate(Ainp1.get())[1])
+            d=d.replace('\'','')
+            d=d.replace('[','')
+            d=d.replace(']','')
+            Ainp2v.set(d)
+    except KeyError:
+        print('ERROR in AupdateTime')
+    Alb2.after(1000, AupdateTime)
+    lastword=Ainp1.get()
 
 def Asave():
     Aflashtext()
@@ -190,6 +215,9 @@ Abtn7.place(relx=0.25, rely=0.5, relwidth=0.1, relheight=0.1)
 
 Abtn8 = Button(frame1, text='查找', command=AFindtext,font=font)
 Abtn8.place(relx=0.05, rely=0.5, relwidth=0.1, relheight=0.1)
+
+#Abtn8 = Button(frame1, text='查找', command=AFindtext,font=font)
+#Abtn8.place(relx=0.05, rely=0.5, relwidth=0.1, relheight=0.1)
 
 # 在窗体垂直自上而下位置60%处起，布局相对窗体高度40%高的文本框
 
@@ -384,12 +412,23 @@ def enterevent(event):
         elif state==1:
             Rrun2()
 
+def RupdateTime():
+    #v2.set(translate_content_ch(inp1.get()))
+    global testword
+    if len(Rinp1.get())==len(testword.words):
+        Rv4.set("长度：√")
+    else:
+        Rv4.set("长度：×")
+    Rlb4.after(100, RupdateTime)
+
 Rv = StringVar()
 Rv.set("Hello")
 Rv2 = StringVar()
 Rv2.set("Hello")
 Rv3 = StringVar()
 Rv3.set("Hello")
+Rv4 = StringVar()
+Rv4.set("Hello")
 
 Rlb1 = Label(frame2, textvariable=Rv,font=font)
 Rlb1.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
@@ -399,6 +438,9 @@ Rlb2.place(relx=0.1, rely=0.8, relwidth=0.8, relheight=0.1)
 
 Rlb3 = Label(frame2, textvariable=Rv3,font=font)
 Rlb3.place(relx=0.1, rely=0.6, relwidth=0.8, relheight=0.1)
+
+Rlb4 = Label(frame2, textvariable=Rv4,font=font)
+Rlb4.place(relx=0.45, rely=0.3, relwidth=0.1, relheight=0.1)
 
 Rinp1 = Entry(frame2,font=font)
 Rinp1.place(relx=0.35, rely=0.2, relwidth=0.3, relheight=0.1)
@@ -420,6 +462,7 @@ Rbtn4.place(relx=0.8, rely=0.2, relwidth=0.1, relheight=0.1)
 #----------------------------#
 Rrun2()
 Aflashtext()
-updateTime()
+AupdateTime()
+RupdateTime()
 #savefile() 
 print()
