@@ -1,5 +1,10 @@
 import os
-os.chdir('../')
+
+if not os.path.exists('EwtSettings'):
+    # 不存在，就创建
+    os.makedirs('EwtSettings')
+
+os.chdir('EwtSettings')
 from ALLwindow import *
 
 notebook.add(frame1, text="单词列表")
@@ -69,5 +74,5 @@ root['menu'] = f#顶级菜单关联根窗体
 #f.add_cascade(label='编辑',menu=f2)
 f.add_cascade(label='帮助',command=Fhelp)
 f.add_cascade(label='关于',command=Fabout)
-SpeakWords('individual')
+#SpeakWords('individual')
 root.mainloop()

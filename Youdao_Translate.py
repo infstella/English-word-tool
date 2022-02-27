@@ -64,29 +64,13 @@ class YoudaoTranslate():
         self.data['vocabId'] = ""#您的用户词表ID
         
         
-        '''
-        调用youdao API
-        type = 0：美音
-        type = 1：英音
-
-        判断当前目录下是否存在两个语音库的目录
-        如果不存在，创建
-        '''
-
-        # 文件根目录
-        #print(os.path.abspath(__file__))
-        #a=os.path.abspath(__file__)
-        
-        #self._dirRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        #self._dirSpeech = os.path.join(self._dirRoot, 'TranslateJson')  
-
 
         # 判断是否存在库
         if not os.path.exists('TranslateJson'):
             # 不存在，就创建
             os.makedirs('TranslateJson')
             
-        self._dirRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._dirRoot = os.path.dirname(os.path.abspath(__file__))+'\\EwtSettings'
         self._dirSpeech = os.path.join(self._dirRoot, 'TranslateJson')
         
     def translate(self,q):
@@ -229,6 +213,6 @@ class YoudaoTranslate():
 
 
 if __name__ == '__main__':
-    os.chdir('../')
+    os.chdir('EwtSettings')
     YT=YoudaoTranslate()
     YT.translate('virtual choir')

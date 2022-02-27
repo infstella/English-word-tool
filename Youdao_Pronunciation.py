@@ -30,7 +30,8 @@ class youdao():
         #print(os.path.abspath(__file__))
         #a=os.path.abspath(__file__)
         
-        self._dirRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._dirRoot = os.path.dirname(os.path.abspath(__file__))+'\\EwtSettings'
+        
         if 0 == self._type:
             self._dirSpeech = os.path.join(self._dirRoot, 'Speech_US')  # 美音库
         else:

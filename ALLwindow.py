@@ -262,7 +262,7 @@ Siv3 = StringVar()
 Siv3.set(setting['wordlist'])
 
 
-def cw():
+def cw():#create test wordlist
     global tlearn
     a=[]
     d=setting['wordlist']
@@ -397,6 +397,8 @@ def Rrun3():
     Rv.set('OK')
     
 def Rrun4():
+    if testword == None:
+        return
     SpeakWords(testword.words)
 
 
@@ -415,6 +417,9 @@ def enterevent(event):
 def RupdateTime():
     #v2.set(translate_content_ch(inp1.get()))
     global testword
+    if testword == None:
+        return
+    
     if len(Rinp1.get())==len(testword.words):
         Rv4.set("长度：√")
     else:
