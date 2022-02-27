@@ -70,7 +70,7 @@ class YoudaoTranslate():
             # 不存在，就创建
             os.makedirs('TranslateJson')
             
-        self._dirRoot = os.path.dirname(os.path.abspath(__file__))+'\\EwtSettings'
+        self._dirRoot = os.getcwd()
         self._dirSpeech = os.path.join(self._dirRoot, 'TranslateJson')
         
     def translate(self,q):

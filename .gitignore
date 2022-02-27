@@ -399,13 +399,16 @@ FodyWeavers.xsd
 
 #pyinstaller
 build/
+dist/
 mainwindow.spec
 English-word-tool启动器.spec
 English-word-tool.spec
 
 #custom project
 test.py
+test.spec
 config.json
 wordlist/
 remember_weight.json
 EwtSettings/
+

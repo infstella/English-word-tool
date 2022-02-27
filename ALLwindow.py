@@ -1,5 +1,5 @@
 global TotalList
-from ast import Expression
+#from ast import Expression
 import random
 import upgrade
 from tkinter import *

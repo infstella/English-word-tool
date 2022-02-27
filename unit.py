@@ -1,9 +1,11 @@
 import threading
+import playsound
 #from playsound import playsound
-#import Play_mp3 
+import Play_mp3 
 import time,pickle,json,os
+#from winsound import PlaySound
 
-import pygame
+#import pygame
 from WordPattern import *
 import sys
 from Youdao_Pronunciation import youdao
@@ -293,23 +295,30 @@ class SpeakWords_T (threading.Thread):
         #open(soundPath)
         #os.system(soundPath)
         try:
-            pygame.mixer.init()                           # 初始化
-            track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
-            pygame.mixer.music.play()
-            time.sleep(10)
-            pygame.mixer.music.stop()
-        except:
+            #pygame.mixer.init()                           # 初始化
+            #track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
+            #pygame.mixer.music.play()
+            
+            
+            playsound.playsound(soundPath)
+        except Exception as ide:
+            #print(f'Error: {ide}')
+            print('Info: error in playsound_EN. try playing US.')
+            #pygame.mixer.music.stop()
             try:
                 yd.setAccent(0)
                 soundPath=yd.down(str(self.words).replace(' ',''))
-                pygame.mixer.init()                           # 初始化
-                track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
-                pygame.mixer.music.play()
-                time.sleep(10)
-                pygame.mixer.music.stop()
+                #pygame.mixer.init()                           # 初始化
+                #track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
+                #pygame.mixer.music.play()
+                playsound.playsound(soundPath)
+                #time.sleep(10)
+                #pygame.mixer.music.stop()
                 yd.setAccent(1)
-            except:
-                print('Info:Cannot Play Sound.Filename:'+self.words)
+            except Exception as ide:
+                
+                #print(f'Error: {ide}')
+                print('Info:Cannot Play Sound. Filename:'+self.words)
         
         #由于未知原因，某些特殊音频无法在python中播放，已查明的有EN-individual.mp3
         #Play_mp3.play(soundPath)
