@@ -26,7 +26,7 @@ filename='M2 Words'
 CHOOSE_NORMAL=0
 CHOOSE_OLD=1
 CHOOSE_NEW=2
-LOCAL_SOFTWARE_VERSION='v0.1'
+LOCAL_SOFTWARE_VERSION='v0.2'
 yd=youdao()
 
 #yd=None
@@ -291,7 +291,10 @@ class SpeakWords_T (threading.Thread):
         self.words = words
     def run(self):
         #playsound(yd.down(self.words))
-        soundPath=yd.down(str(self.words).replace(' ',''))
+        d=str(self.words).replace(' ',',')
+        d=d.replace('sb.','somebody')
+        d=d.replace('sth.','something')
+        soundPath=yd.down(d)
         #open(soundPath)
         #os.system(soundPath)
         try:

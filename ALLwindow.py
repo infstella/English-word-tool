@@ -57,15 +57,33 @@ def Aflashtext():
         tree.insert("", TotalList[0].index(i), text=str(TotalList[0].index(i)), values=(str(i.words), str(i.chinese), str(i.create_time), str(i.forget_time),str(round(i.remember_rate,2)),str(i.POS)))
 
 
-def Ago(x):
+def Ago(x=''):
     global TotalList
     TotalList=loadfileP(Acomboxlist.get())
     #print('event:选择列表')
     Av4.set('版本:'+TotalList[1]['version'])
     Aflashtext()
+global lastword,lastcount
 lastcount=0
-def AupdateTime():
+lastword=''
+
+def AAutoSave():
+    if ACheckVar2.get() == 0:
+        Alb3.after(30000, AAutoSave)
+        return
+    Asave()
+    print('Auto Save Completed')
+    Alb3.after(30000, AAutoSave)
+    
+
+#OUT OF DATE:
+def AupdateTime():#OUT OF DATE
     #v2.set(translate_content_ch(inp1.get()))
+    
+    #print(ACheckVar1.get())
+    if ACheckVar1.get() == 0:
+        Alb2.after(1000, AupdateTime)
+        return
     try:
         global lastword,lastcount
         if Ainp1.get()!='' and Ainp1.get()==lastword:
@@ -89,6 +107,26 @@ def AupdateTime():
         print('ERROR in AupdateTime')
     Alb2.after(1000, AupdateTime)
     lastword=Ainp1.get()
+#OUT OF DATE;
+def AAutoFill():
+    if ACheckVar1.get() == 0:
+        return
+    try:
+        if Ainp1.get()!='':
+            e=trans.translate(Ainp1.get())[0]
+            f=''
+            for i in e:
+                f+=i.replace('.','')
+                if i != e[-1]:
+                    f+='/'
+            Ainp4v.set(f)
+            d=str(trans.translate(Ainp1.get())[1])
+            d=d.replace('\'','')
+            d=d.replace('[','')
+            d=d.replace(']','')
+            Ainp2v.set(d)
+    except KeyError:
+        print('ERROR in AAutoFill')
 
 def Asave():
     Aflashtext()
@@ -161,6 +199,7 @@ Alb2 = Label(frame1, textvariable=Av2,font=font)
 Alb2.place(relx=0.2, rely=0.3, relwidth=0.2, relheight=0.1)
 
 def Ainp1E(event):
+    AAutoFill()
     Ainp2.focus_set()
 Ainp1 = Entry(frame1,font=font, textvariable=Ainp1v)#L2
 Ainp1.place(relx=0.15, rely=0.2, relwidth=0.3, relheight=0.1)
@@ -185,6 +224,18 @@ Alb3.place(relx=0, rely=0.05, relwidth=0.2, relheight=0.05)
 Alb4 = Label(frame1, textvariable=Av4,font=MICROFONT)
 Alb4.place(relx=0, rely=0.1, relwidth=0.2, relheight=0.05)
 
+ACheckVar1 = IntVar()
+ACheck1 = Checkbutton(frame1, text = "启用自动填充", variable = ACheckVar1, \
+                 onvalue = 1, offvalue = 0, height=5, \
+                 width = 20)
+ACheck1.place(relx=0.3, rely=0.4, relwidth=0.2, relheight=0.02)
+
+ACheckVar2 = IntVar()
+ACheck2 = Checkbutton(frame1, text = "启用自动保存", variable = ACheckVar2, \
+                 onvalue = 1, offvalue = 0, height=5, \
+                 width = 20)
+ACheck2.place(relx=0.3, rely=0.45, relwidth=0.2, relheight=0.02)
+
 Acomvalue=StringVar()#窗体自带的文本，新建一个值
 Acomboxlist=ttk.Combobox(frame1,textvariable=Acomvalue) #初始化
 Acomboxlist["values"]=(wordlistname)
@@ -201,7 +252,7 @@ Abtn2.place(relx=0.65, rely=0.4, relwidth=0.1, relheight=0.1)
 Abtn3 = Button(frame1, text='保存', command=Asave,font=font)
 Abtn3.place(relx=0.65, rely=0.5, relwidth=0.1, relheight=0.1)
 
-Abtn4 = Button(frame1, text='刷新', command=Aflashtext,font=font)
+Abtn4 = Button(frame1, text='刷新', command=Ago,font=font)
 Abtn4.place(relx=0.05, rely=0.4, relwidth=0.1, relheight=0.1)
 
 #Abtn5 = Button(frame1, text='添加列表', command=addlist,font=font)
@@ -467,7 +518,8 @@ Rbtn4.place(relx=0.8, rely=0.2, relwidth=0.1, relheight=0.1)
 #----------------------------#
 Rrun2()
 Aflashtext()
-AupdateTime()
+#AupdateTime()
 RupdateTime()
+AAutoSave()
 #savefile() 
 print()
