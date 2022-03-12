@@ -288,6 +288,11 @@ tree = ttk.Treeview(frame1)
 tree.place(relx=0, rely=0.6, relwidth=1, relheight=0.35)
 tree["columns"] = (showL[0], showL[1], showL[2], showL[3], showL[4], showL[5]) 
 
+VScroll1 = Scrollbar(frame1, orient='vertical', command=tree.yview)
+VScroll1.place(relx=0.98, rely=0.6, relwidth=0.02, relheight=0.35)
+# 给treeview添加配置
+tree.configure(yscrollcommand=VScroll1.set)
+
 tree.bind('<ButtonRelease-1>',treeclick)
 
 for i in range(6):
@@ -347,6 +352,7 @@ Scomboxlist=ttk.Combobox(frame3,textvariable=Scomvalue) #初始化
 Scomboxlist["values"]=(wordlistname)
 Scomboxlist.current(0) #选择第一个
 Scomboxlist.bind("<<ComboboxSelected>>",Sgo) #绑定事件,(下拉列表框被选中时，绑定go()函数)
+
 Scomboxlist.place(relx=0.2, rely=0.05, relwidth=0.2, relheight=0.05)
 
 Slb2 = Label(frame3, textvariable=Sv2,font=font)
@@ -395,8 +401,10 @@ def Afind(x):
 
 #start()
 cw()
+global comboCount
+comboCount=0
 def Rrun1():
-    global testword,state
+    global testword,state,comboCount
     global flag_repete
     state=1
     if len(tlearn)==0:
@@ -413,14 +421,18 @@ def Rrun1():
                 tlearn.remove(testword)
                 testword.remember_rate=1
                 Afind(testword)
-                Rv.set('正确:）')  
+                Rv.set('正确:）')
+                comboCount+=1
+                Rv5.set('combo: '+str(comboCount))  
         else:
             Rv.set('错误:（，正确答案是 '+str(testword.words))
+            comboCount=0
             testword.forget_time=today_date
             testword. remember_rate=0
             Afind(testword)
             SpeakWords(testword.words)
             flag_repete=True
+            Rv5.set('combo: '+str(comboCount))
     
 
 def Rrun2():
@@ -485,6 +497,8 @@ Rv3 = StringVar()
 Rv3.set("Hello")
 Rv4 = StringVar()
 Rv4.set("Hello")
+Rv5 = StringVar()#combo
+Rv5.set("combo:")
 
 Rlb1 = Label(frame2, textvariable=Rv,font=font)
 Rlb1.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
@@ -497,6 +511,9 @@ Rlb3.place(relx=0.1, rely=0.6, relwidth=0.8, relheight=0.1)
 
 Rlb4 = Label(frame2, textvariable=Rv4,font=font)
 Rlb4.place(relx=0.45, rely=0.3, relwidth=0.1, relheight=0.1)
+
+Rlb5 = Label(frame2, textvariable=Rv5,font=font)
+Rlb5.place(relx=0.9, rely=0.1, relwidth=0.1, relheight=0.05)
 
 Rinp1 = Entry(frame2,font=font)
 Rinp1.place(relx=0.35, rely=0.2, relwidth=0.3, relheight=0.1)
