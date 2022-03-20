@@ -17,9 +17,10 @@ from Youdao_Pronunciation import youdao
 
 print('456')
 font=('宋体', 20)
-FONT=('黑体', 12)
+FONT=('黑体', 18)
 MICROFONT=('黑体', 12)
-HEADFONT=FONT=('宋体', 22)
+INFOFONT=('黑体', 16)
+HEADFONT=('宋体', 22)
 global filename
 filename='M2 Words'
 #filename='WordsList'
@@ -160,7 +161,7 @@ def checkinit():
     try:
         f = open('config.json', 'r')
     except:
-        x={"Old": "0", "New": "0", "wordlist": "", "time": 0}
+        x={"Old": "0", "New": "0", "wordlist": "", "time": 0, "todayNewWords": 0, "todayOldWords": 0}
         open('config.json','w')
         b = json.dumps(x)
         f2 = open('config.json', 'w')
@@ -245,6 +246,10 @@ def checkforget():
 
     if timedate != t and config['wordlist']!='':
         PrintLog('',logName='checkforget.log',IsReflash=True)
+        
+        config['todayNewWords']=0
+        config['todayOldWords']=0
+        
         config['time']=timedate
         for i in d:#i: file name
             

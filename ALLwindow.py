@@ -40,9 +40,16 @@ wordlistname=get_all_file()
 
 #------------------A-------------------------#
 
+def TextGet(x):
+    str1=x.get('1.0', END)
+    str1=str1.strip('\n')
+    str1=str1.replace('\n','')
+    #str1=str1.replace('\\n','')
 
+    return str1
+    
 def Arun1(event=None):
-    TotalList[0].append(Word(words=Ainp1.get(),chinese=Ainp2.get(),create_time=today_date,forget_time=today_date,POS=Ainp4.get(),wordlist=Acomboxlist.get()))
+    TotalList[0].append(Word(words=Ainp1.get(),chinese=TextGet(Ainp2),create_time=today_date,forget_time=today_date,POS=Ainp4.get(),wordlist=Acomboxlist.get()))
     Av.set('设置成功!')
     Aflashtext()
 
@@ -102,7 +109,8 @@ def AupdateTime():#OUT OF DATE
             d=d.replace('\'','')
             d=d.replace('[','')
             d=d.replace(']','')
-            Ainp2v.set(d)
+            Ainp2.delete(1.0,END)
+            Ainp2.insert(INSERT,d)
     except KeyError:
         print('ERROR in AupdateTime')
     Alb2.after(1000, AupdateTime)
@@ -124,7 +132,8 @@ def AAutoFill():
             d=d.replace('\'','')
             d=d.replace('[','')
             d=d.replace(']','')
-            Ainp2v.set(d)
+            Ainp2.delete(1.0,END)
+            Ainp2.insert(INSERT,d)
     except KeyError:
         print('ERROR in AAutoFill')
 
@@ -138,8 +147,8 @@ def Asave():
     Aflashtext()
 
 def AEdit():
-    if Ainp2.get()!='':
-        TotalList[0][int(Ainp3.get())].chinese=Ainp2.get()
+    if TextGet(Ainp2)!='':
+        TotalList[0][int(Ainp3.get())].chinese=TextGet(Ainp2)
     if Ainp4.get()!='':
         TotalList[0][int(Ainp3.get())].POS=Ainp4.get()
     Aflashtext()
@@ -150,7 +159,8 @@ def treeclick(event):
     if item:
         txt = int(tree.item(item[0],'text'))
     try:
-        Ainp2v.set(TotalList[0][txt].chinese)
+        Ainp2.delete(1.0,END)
+        Ainp2.insert(INSERT,TotalList[0][txt].chinese)
         Ainp1v.set(TotalList[0][txt].words)
         Ainp4v.set(TotalList[0][txt].POS)
         Ainp3v.set(txt)
@@ -162,7 +172,8 @@ def AFindtext():
     for item in TotalList[0]:
         if item.words==a:
             i=TotalList[0].index(item)
-            Ainp2v.set(TotalList[0][i].chinese)
+            Ainp2.delete(1.0,END)
+            Ainp2.insert(INSERT,TotalList[0][i].chinese)
             Ainp1v.set(TotalList[0][i].words)
             Ainp4v.set(TotalList[0][i].POS)
             Ainp3v.set(i)
@@ -180,14 +191,15 @@ Av4 = StringVar()
 Av4.set("版本:")
 
 Ainp1v= StringVar()
-Ainp2v= StringVar()
+#Ainp2= StringVar()
 Ainp3v= StringVar()
 Ainp4v= StringVar()
 
 def frame1_enterevent(event):
     Arun1()
     Ainp1v.set('')
-    Ainp2v.set('')
+    Ainp2.delete(1.0,END)
+    Ainp2.insert(INSERT,'')
     Ainp3v.set('')
     Ainp4v.set('')
     Ainp1.focus_set()
@@ -201,20 +213,23 @@ Alb2.place(relx=0.2, rely=0.3, relwidth=0.2, relheight=0.1)
 def Ainp1E(event):
     AAutoFill()
     Ainp2.focus_set()
-Ainp1 = Entry(frame1,font=font, textvariable=Ainp1v)#L2
+Ainp1 = Entry(frame1,font=font, textvariable=Ainp1v)#L2 English
 Ainp1.place(relx=0.15, rely=0.2, relwidth=0.3, relheight=0.1)
 Ainp1.bind('<Return>',Ainp1E)
 def Ainp2E(event):
+    cache_a=TextGet(Ainp2)
+    Ainp2.delete('1.0',END)
+    Ainp2.insert('1.0',cache_a)
     Ainp4.focus_set()
-Ainp2 = Entry(frame1,font=font, textvariable=Ainp2v)#L3
+Ainp2 = Text(frame1,font=INFOFONT)#L3 Chinese textvariable=Ainp2v,justify=LEFT,
 Ainp2.place(relx=0.55, rely=0.2, relwidth=0.3, relheight=0.1)
 Ainp2.bind('<Return>',Ainp2E)
 
-Ainp3 = Entry(frame1,font=font, textvariable=Ainp3v)#L1
+Ainp3 = Entry(frame1,font=font, textvariable=Ainp3v)#L1 NUM
 Ainp3.place(relx=0.02, rely=0.2, relwidth=0.1, relheight=0.1)
 #Ainp1.bind('<Return>',lambda:Ainp1.focus_set())
 
-Ainp4 = Entry(frame1,font=font, textvariable=Ainp4v)#L4
+Ainp4 = Entry(frame1,font=font, textvariable=Ainp4v)#L4 POS
 Ainp4.place(relx=0.9, rely=0.2, relwidth=0.05, relheight=0.05)
 Ainp4.bind('<Return>',frame1_enterevent)
 
@@ -419,20 +434,43 @@ def Rrun1():
                 Rv.set('正确重复:）')  
             else:
                 tlearn.remove(testword)
+                
+                config=loadjson()
+                todayNW=config['todayNewWords']
+                todayOW=config['todayOldWords']
+                if testword.remember_rate==0:
+                    todayNW+=1
+                else:
+                    todayOW+=1
                 testword.remember_rate=1
                 Afind(testword)
                 Rv.set('正确:）')
+                
                 comboCount+=1
-                Rv5.set('combo: '+str(comboCount))  
+                config['todayNewWords']=todayNW
+                config['todayOldWords']=todayOW
+                savejson(config)  
+                
+                Rv5.set('combo: '+str(comboCount)+\
+                        '\n今天背诵生词数:'+str(todayNW)+\
+                        '\n今天复习单词数:'+str(todayOW)+\
+                        '\nTotal:'+str(todayNW+todayOW))
+                
         else:
             Rv.set('错误:（，正确答案是 '+str(testword.words))
             comboCount=0
             testword.forget_time=today_date
-            testword. remember_rate=0
+            #testword. remember_rate=0 !!!DO NOT REMONE IT!!!
             Afind(testword)
             SpeakWords(testword.words)
             flag_repete=True
-            Rv5.set('combo: '+str(comboCount))
+            config=loadjson()
+            todayNW=config['todayNewWords']
+            todayOW=config['todayOldWords']
+            Rv5.set('combo: '+str(comboCount)+\
+                        '\n今天背诵生词数:'+str(todayNW)+\
+                        '\n今天复习单词数:'+str(todayOW)+\
+                        '\nTotal:'+str(todayNW+todayOW))
     
 
 def Rrun2():
@@ -498,22 +536,25 @@ Rv3.set("Hello")
 Rv4 = StringVar()
 Rv4.set("Hello")
 Rv5 = StringVar()#combo
-Rv5.set("combo:")
+Rv5.set('combo: '+\
+        '\n今天背诵生词数:'+\
+        '\n今天复习单词数:'+\
+        '\nTotal:')
 
-Rlb1 = Label(frame2, textvariable=Rv,font=font)
+Rlb1 = Label(frame2, textvariable=Rv,font=FONT)
 Rlb1.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
 
-Rlb2 = Label(frame2, textvariable=Rv2,font=font)
+Rlb2 = Label(frame2, textvariable=Rv2,font=FONT)
 Rlb2.place(relx=0.1, rely=0.8, relwidth=0.8, relheight=0.1)
 
-Rlb3 = Label(frame2, textvariable=Rv3,font=font)
+Rlb3 = Label(frame2, textvariable=Rv3,font=FONT)
 Rlb3.place(relx=0.1, rely=0.6, relwidth=0.8, relheight=0.1)
 
-Rlb4 = Label(frame2, textvariable=Rv4,font=font)
+Rlb4 = Label(frame2, textvariable=Rv4,font=FONT)
 Rlb4.place(relx=0.45, rely=0.3, relwidth=0.1, relheight=0.1)
 
-Rlb5 = Label(frame2, textvariable=Rv5,font=font)
-Rlb5.place(relx=0.9, rely=0.1, relwidth=0.1, relheight=0.05)
+Rlb5 = Label(frame2, textvariable=Rv5,font=INFOFONT)#Information
+Rlb5.place(relx=0.85, rely=0, relwidth=0.15, relheight=0.2)
 
 Rinp1 = Entry(frame2,font=font)
 Rinp1.place(relx=0.35, rely=0.2, relwidth=0.3, relheight=0.1)

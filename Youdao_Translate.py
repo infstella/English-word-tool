@@ -176,7 +176,7 @@ class YoudaoTranslate():
                 count=0
                 #d=i[2:].split('，')
                 #d=list(map(str.split(','),d))
-                for ii in i[4:].split('，'):
+                for ii in i[4:].split('；'):
                     if count>=2:
                         break
                     list1[1].append(ii)
@@ -187,7 +187,7 @@ class YoudaoTranslate():
                 count=0
                 #d=i[2:].split('，')
                 #d=list(map(str.split(','),d))
-                for ii in i[3:].split('，'):
+                for ii in i[3:].split('；'):
                     if count>=2:
                         break
                     list1[1].append(ii)
@@ -198,7 +198,7 @@ class YoudaoTranslate():
                 count=0
                 #d=i[2:].split('，')
                 #d=list(map(str.split(','),d))
-                for ii in i[2:].split('，'):
+                for ii in i[2:].split('；'):
                     if count>=2:
                         break
                     list1[1].append(ii)
@@ -206,11 +206,20 @@ class YoudaoTranslate():
                     
         if list1==[[],[]]:
             return [['P'],[explains[0]]]
-
+        
+        list1[1]=list(map(f1,list1[1]))
         return list1
                 #for ii in 
                 #list1[1].append()
-
+def f1(x):
+    x=x.replace('，',',')
+    x=x.replace('；',';')
+    x=x.replace('（','(')
+    x=x.replace('）',')')
+    x=x.replace('“','\"')
+    x=x.replace('”','\"')
+    x=x.replace(' ','')
+    return x
 
 if __name__ == '__main__':
     os.chdir('EwtSettings')
