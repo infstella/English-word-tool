@@ -121,7 +121,7 @@ def chooseWords(x,type,InpList):
     i=0
     ii=0
     rlist=[]
-    while ii<=x and i<=len(InpList)-1:
+    while ii<x and i<=len(InpList)-1: #ii:Number of words that have been selected; i:The number of words in input list
         c=InpList[i]
         if c.remember_rate<0.4 and type==CHOOSE_NORMAL:
             rlist.append(c)

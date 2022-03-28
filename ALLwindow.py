@@ -21,8 +21,10 @@ frame3 = Frame(root)
 setting=loadjson()
 trans=YoudaoTranslate()
 
-global tlearn
+global tlearn,oldTlearn,newTlearn,repTlearn
 tlearn=[]
+oldTlearn=[]
+newTlearn=[]
 global testword
 global state,Atype
 global state2
@@ -334,7 +336,7 @@ Siv3.set(setting['wordlist'])
 
 
 def cw():#create test wordlist
-    global tlearn
+    global tlearn,oldTlearn,newTlearn,repTlearn
     a=[]
     d=setting['wordlist']
     d=list(d.split(','))
@@ -343,10 +345,12 @@ def cw():#create test wordlist
     for i in d:
         c=loadfileP(i)
         a=a+c[0]
-    tlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a) 
+    tlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a)
+    oldTlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a)
     tlearn+=chooseWords(int(setting['New']),CHOOSE_NEW,a)
-    
-    print()
+    newTlearn=chooseWords(int(setting['New']),CHOOSE_NEW,a)
+    repTlearn=chooseWords(int(setting['New']),CHOOSE_NEW,a)
+    print('Choosing words completed')
 
 def Srun1():
     global setting
@@ -433,20 +437,24 @@ def Rrun1():
                 flag_repete=False
                 Rv.set('正确重复:）')  
             else:
-                tlearn.remove(testword)
-                
+                r=RRemoveWords(testword)
+                Rv.set('正确:）')
+                comboCount+=1
                 config=loadjson()
                 todayNW=config['todayNewWords']
                 todayOW=config['todayOldWords']
-                if testword.remember_rate==0:
-                    todayNW+=1
-                else:
-                    todayOW+=1
-                testword.remember_rate=1
-                Afind(testword)
-                Rv.set('正确:）')
+                #tlearn.remove(testword)
                 
-                comboCount+=1
+                if r!='new':
+                    if testword.remember_rate==0:
+                        todayNW+=1
+                    else:
+                        todayOW+=1
+                
+                if r!='new':
+                    testword.remember_rate=1
+                    Afind(testword)
+                
                 config['todayNewWords']=todayNW
                 config['todayOldWords']=todayOW
                 savejson(config)  
@@ -480,22 +488,64 @@ def Rrun2():
     if len(tlearn)==0:
         Rv3.set('今天背完啦')
     else:
-        if flag_repete:
-            testword=testword
-        else:
-            randomnum=random.randint(0,len(tlearn)-1)
-            testword=tlearn[randomnum]
+        RChooseWords()
         #print(testword.words)
         Rinp1.delete(0, END)  # 清空输入
         Rv.set(testword.chinese+'     '+testword.POS+'     '+'出自：'+testword.wordlist)
         Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,2))+' 加入时间:'+str(testword.create_time))
         Rv3.set("剩余单词数:"+str(len(tlearn)))
+
+def FindandRemove(list1,target):
+    for i in list1:
+        if i.words==target.words:
+            return i
+
+def RRemoveWords(x):#return if a new word
+    global testword,state,flag_repete,oldTlearn,newTlearn,repTlearn,tlearn
+    if(len(newTlearn)>0):
+        a=FindandRemove(newTlearn,testword)
+        newTlearn.remove(a)
+        return 'new'
+    elif(len(oldTlearn)>0):
+        a=FindandRemove(oldTlearn,testword)
+        oldTlearn.remove(a)
+        tlearn.remove(testword)
+        return 'old'
+    elif(len(repTlearn)>0):
+        a=FindandRemove(repTlearn,testword)
+        repTlearn.remove(a) #tlearn = repTlearn[randomnum]
+        tlearn.remove(testword)
+        return 'rep'
+    
+
+def RChooseWords():
+    global testword,state,flag_repete,oldTlearn,newTlearn,repTlearn,tlearn
+    if flag_repete:
+        testword=testword
+    else:
         
+        if(len(newTlearn)>0):
+            randomnum=random.randint(0,len(newTlearn)-1)
+            testword=newTlearn[randomnum]
+        elif(len(oldTlearn)>0):
+            randomnum=random.randint(0,len(oldTlearn)-1)
+            testword=oldTlearn[randomnum]
+            
+        elif(len(repTlearn)>0):
+            randomnum=random.randint(0,len(repTlearn)-1)
+            #tlearn+=repTlearn[randomnum]
+            testword=repTlearn[randomnum]
+        for i in tlearn:
+            if i.words==testword.words:
+                testword=i
+                return
+    print()
+
 def Rrun3():
-    tlearn.remove(testword)
-    testword.remember_rate=1
-    Afind(testword)
-    Rv.set('OK')
+    #tlearn.remove(testword)
+    #testword.remember_rate=1
+    #Afind(testword)
+    Rv.set('This function is banned')
     
 def Rrun4():
     if testword == None:
