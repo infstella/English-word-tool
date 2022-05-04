@@ -28,6 +28,7 @@ CHOOSE_NORMAL=0
 CHOOSE_OLD=1
 CHOOSE_NEW=2
 LOCAL_SOFTWARE_VERSION='v0.2'
+LOCAL_NUM_VERSION=2
 yd=youdao()
 
 #yd=None
@@ -77,7 +78,7 @@ def dec86400P(num):
 #today_date:date ; timedate:calculable  
 def creat():
     global TotalList
-    TotalList=[[],{'version':'v0.2','num_version':2}]
+    TotalList=[[],{'version':LOCAL_SOFTWARE_VERSION,'num_version':LOCAL_NUM_VERSION}]
     TotalList[0].append(Word(words='hello',chinese='哈喽',create_time=today_date,forget_time='2021-12-15',wordlist='NewWordsList'))
     TotalList[0].append(Word(words='world',chinese='世界',create_time=today_date,forget_time='2021-12-16',wordlist='NewWordsList'))
 
@@ -161,7 +162,7 @@ def checkinit():
     try:
         f = open('config.json', 'r')
     except:
-        x={"Old": "0", "New": "0", "wordlist": "", "time": 0, "todayNewWords": 0, "todayOldWords": 0}
+        x={"Old": "0", "New": "0", "wordlist": "", "time": 0, "todayNewWords": 0, "todayOldWords": 0,"reviewList": "","reviewMode": False}#初始化
         open('config.json','w')
         b = json.dumps(x)
         f2 = open('config.json', 'w')
@@ -262,18 +263,25 @@ def checkforget():
                 weight=1
                 savejson(k,json_name='remember_weight.json')
             for iii in c[0]:
+                IsZero=False
                 cachenum=iii.remember_rate
                 d= 1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )
-                iii.remember_rate=iii.remember_rate*  1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )#update remenber rate
+                iii.remember_rate=iii.remember_rate*  d#update remenber rate
+                if 0.01<iii.remember_rate<=0.08:
+                    iii.remember_rate=0.08
+                    PrintLog(str('SMALL:'+str(iii.remember_rate*d)),logName='checkforget.log')
                 if iii.remember_rate<0:
                     iii.remember_rate=0
+                    PrintLog(str('ZERO:'+str(iii.remember_rate*d)),logName='checkforget.log')
                 PrintLog((str(iii.words)+' '+str(d)+': '+str(cachenum)+'-->'+str(iii.remember_rate)),logName='checkforget.log')
+                
+                    
             savefileP(i,c)
             #with open('wordlist//'+i, 'w+b') as fp: # 把 t 对象存到文件中
             #    pickle.dump(c, fp)
         savejson(config)
 
-def ResetWordlist():
+def ResetWordlist():#当文件名发生更改时，同步到单词表的单词
     wordlistname=get_all_file()
     for item in wordlistname:
         list1=loadfileP(item)
@@ -282,7 +290,7 @@ def ResetWordlist():
         savefileP(item,list1)
 
 
-def Speak_init():
+def Speak_init():#废了
     
     
     '''engine.setProperty('rate', 125)     # setting up new voice rate #init=200
@@ -290,7 +298,8 @@ def Speak_init():
     voices = engine.getProperty('voices')       #getting details of current voice
     #engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
     engine.setProperty('voice', voices[1].id)   #changing index, changes voices. 1 for female'''
-class SpeakWords_T (threading.Thread):
+    
+class SpeakWords_T (threading.Thread):#发音线程类
     def __init__(self, words):
         threading.Thread.__init__(self)
         self.words = words
@@ -309,7 +318,8 @@ class SpeakWords_T (threading.Thread):
             
             
             playsound.playsound(soundPath)
-        except Exception as ide:
+        except Exception as ide: 
+            '''美式英式总有一个是'''
             #print(f'Error: {ide}')
             print('Info: error in playsound_EN. try playing US.')
             #pygame.mixer.music.stop()
@@ -327,6 +337,8 @@ class SpeakWords_T (threading.Thread):
                 
                 #print(f'Error: {ide}')
                 print('Info:Cannot Play Sound. Filename:'+self.words)
+        
+        
         
         #由于未知原因，某些特殊音频无法在python中播放，已查明的有EN-individual.mp3
         #Play_mp3.play(soundPath)

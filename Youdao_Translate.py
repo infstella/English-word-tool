@@ -9,7 +9,7 @@ import hashlib
 import time
 from imp import reload
 import time
-reload(sys)
+#reload(sys)
 
 
 
@@ -72,6 +72,22 @@ class YoudaoTranslate():
             
         self._dirRoot = os.getcwd()
         self._dirSpeech = os.path.join(self._dirRoot, 'TranslateJson')
+    
+    def foOutput(self,x):
+        
+        if x!='':
+            e=(self.translate(x))[0]
+            f=''
+            for i in e:
+                f+=i.replace('.','')
+                if i != e[-1]:
+                    f+='/'
+            d=str(self.translate(x)[1])
+            d=d.replace('\'','')
+            d=d.replace('[','')
+            d=d.replace(']','')
+            return [d,f]
+       
         
     def translate(self,q):
         

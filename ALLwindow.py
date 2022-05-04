@@ -1,6 +1,8 @@
 global TotalList
 #from ast import Expression
 import random
+
+from sqlalchemy import true
 import upgrade
 from tkinter import *
 from WordPattern import *
@@ -20,6 +22,7 @@ frame2 = Frame(root)
 frame3 = Frame(root)
 setting=loadjson()
 trans=YoudaoTranslate()
+ISREVIEW=False
 
 global tlearn,oldTlearn,newTlearn,repTlearn
 tlearn=[]
@@ -63,7 +66,7 @@ def Aflashtext():
     for item in tree.get_children():
           tree.delete(item)
     for i in TotalList[0]:          
-        tree.insert("", TotalList[0].index(i), text=str(TotalList[0].index(i)), values=(str(i.words), str(i.chinese), str(i.create_time), str(i.forget_time),str(round(i.remember_rate,2)),str(i.POS)))
+        tree.insert("", TotalList[0].index(i), text=str(TotalList[0].index(i)), values=(str(i.words), str(i.chinese), str(i.create_time), str(i.forget_time),str(round(i.remember_rate,3)),str(i.POS)))
 
 
 def Ago(x=''):
@@ -85,8 +88,8 @@ def AAutoSave():
     Alb3.after(30000, AAutoSave)
     
 
-#OUT OF DATE:
-def AupdateTime():#OUT OF DATE
+#OUT OF DATE
+'''def AupdateTime():
     #v2.set(translate_content_ch(inp1.get()))
     
     #print(ACheckVar1.get())
@@ -116,8 +119,8 @@ def AupdateTime():#OUT OF DATE
     except KeyError:
         print('ERROR in AupdateTime')
     Alb2.after(1000, AupdateTime)
-    lastword=Ainp1.get()
-#OUT OF DATE;
+    lastword=Ainp1.get()'''
+
 def AAutoFill():
     if ACheckVar1.get() == 0:
         return
@@ -333,10 +336,29 @@ Siv2 = StringVar()
 Siv2.set(setting['New'])
 Siv3 = StringVar()
 Siv3.set(setting['wordlist'])
-
+Siv4_review=StringVar()
+Siv4_review.set(setting['reviewList'])
 
 def cw():#create test wordlist
-    global tlearn,oldTlearn,newTlearn,repTlearn
+    global tlearn,oldTlearn,newTlearn,repTlearn,ISREVIEW
+    setting=loadjson()
+    if SCheckVar1.get()==1:
+        a=[]
+        d=setting['reviewList']
+        d=list(d.split(','))
+        if setting['reviewList']=='':
+            return
+        for i in d:
+            c=loadfileP(i)
+            a=a+c[0]
+            #print()
+        
+        ISREVIEW=True
+        tlearn=a
+        print('Review Mode ON')
+        print('Choosing words completed')
+        return
+        
     a=[]
     d=setting['wordlist']
     d=list(d.split(','))
@@ -345,6 +367,7 @@ def cw():#create test wordlist
     for i in d:
         c=loadfileP(i)
         a=a+c[0]
+    
     tlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a)
     oldTlearn=chooseWords(int(setting['Old']),CHOOSE_OLD,a)
     tlearn+=chooseWords(int(setting['New']),CHOOSE_NEW,a)
@@ -357,6 +380,7 @@ def Srun1():
     setting['Old']=Sinp1.get()
     setting['New']=Sinp2.get()
     setting['wordlist']=Sinp3.get()
+    setting['reviewList']=Sinp4_review.get()
     savejson(setting)
     cw()
     print()
@@ -377,16 +401,25 @@ Scomboxlist.place(relx=0.2, rely=0.05, relwidth=0.2, relheight=0.05)
 Slb2 = Label(frame3, textvariable=Sv2,font=font)
 Slb2.place(relx=0, rely=0.15, relwidth=0.2, relheight=0.05)
 
-Sinp1 = Entry(frame3,font=font,textvariable=Siv1)
+Sinp1 = Entry(frame3,font=font,textvariable=Siv1)#old
 Sinp1.place(relx=0.2, rely=0.15, relwidth=0.05, relheight=0.05)
 
-Sinp2 = Entry(frame3,font=font,textvariable=Siv2)
+Sinp2 = Entry(frame3,font=font,textvariable=Siv2)#new
 Sinp2.place(relx=0.26, rely=0.15, relwidth=0.05, relheight=0.05)
 
-Sinp3 = Entry(frame3,font=font,textvariable=Siv3)
+Sinp3 = Entry(frame3,font=font,textvariable=Siv3)#wordlist
 Sinp3.place(relx=0.35, rely=0.15, relwidth=0.2, relheight=0.05)
 
-Sbtn1 = Button(frame3, text='确认', command=Srun1,font=font)
+Sinp4_review = Entry(frame3,font=font,textvariable=Siv4_review)#review
+Sinp4_review.place(relx=0.35, rely=0.2, relwidth=0.2, relheight=0.05)
+
+SCheckVar1 = IntVar()
+SCheckReview = Checkbutton(frame3, text = "复习模式", variable = SCheckVar1, \
+                 onvalue = 1, offvalue = 0, height=20, \
+                 width = 80, font=font)
+SCheckReview.place(relx=0, rely=0.2, relwidth=0.15, relheight=0.05)
+
+Sbtn1 = Button(frame3, text='确认', command=Srun1,font=font)#确认
 Sbtn1.place(relx=0.8, rely=0.8, relwidth=0.1, relheight=0.1)
 
 #--------------------R-----------------#
@@ -417,6 +450,17 @@ def Afind(x):
         #with open('wordlist//'+i, 'w+b') as fp: # 把 t 对象存到文件中
         #    pickle.dump(T, fp)
             
+def OutputErrorWords(x):
+    f = open("错题本.txt", 'a')
+    separator=' --- ' 
+    f.write(str(x.chinese)+separator+\
+            str(x.POS)+separator+str(x.wordlist)+separator+\
+            str(x.words)+separator+\
+            str(x.remember_rate)+separator+\
+            str(x.create_time)+separator+\
+            str(x.forget_time)+'\n')
+    f.close()
+    
 
 #start()
 cw()
@@ -440,9 +484,9 @@ def Rrun1():
                 r=RRemoveWords(testword)
                 Rv.set('正确:）')
                 comboCount+=1
-                config=loadjson()
-                todayNW=config['todayNewWords']
-                todayOW=config['todayOldWords']
+                setting=loadjson()
+                todayNW=setting['todayNewWords']
+                todayOW=setting['todayOldWords']
                 #tlearn.remove(testword)
                 
                 if r!='new':
@@ -451,13 +495,15 @@ def Rrun1():
                     else:
                         todayOW+=1
                 
-                if r!='new':
+                if r=='new' or r=='old':
                     testword.remember_rate=1
                     Afind(testword)
+                    
                 
-                config['todayNewWords']=todayNW
-                config['todayOldWords']=todayOW
-                savejson(config)  
+                    
+                setting['todayNewWords']=todayNW
+                setting['todayOldWords']=todayOW
+                savejson(setting)  
                 
                 Rv5.set('combo: '+str(comboCount)+\
                         '\n今天背诵生词数:'+str(todayNW)+\
@@ -466,16 +512,27 @@ def Rrun1():
                 
         else:
             Rv.set('错误:（，正确答案是 '+str(testword.words))
+            if ISREVIEW==False:
+                testword.forget_time=today_date
+                #testword. remember_rate=0
+                Afind(testword)
+                SpeakWords(testword.words)
+                flag_repete=True
+            else:
+                OutputErrorWords(testword)
+                tlearn.remove(testword)
             comboCount=0
-            testword.forget_time=today_date
-            #testword. remember_rate=0 !!!DO NOT REMONE IT!!!
-            Afind(testword)
-            SpeakWords(testword.words)
-            flag_repete=True
-            config=loadjson()
-            todayNW=config['todayNewWords']
-            todayOW=config['todayOldWords']
+            setting=loadjson()
+            todayNW=setting['todayNewWords']
+            todayOW=setting['todayOldWords']
             Rv5.set('combo: '+str(comboCount)+\
+                        '\n今天背诵生词数:'+str(todayNW)+\
+                        '\n今天复习单词数:'+str(todayOW)+\
+                        '\nTotal:'+str(todayNW+todayOW))
+            if ISREVIEW:
+                todayOW+=1
+                savejson(setting)  
+                Rv5.set('combo: '+str(comboCount)+\
                         '\n今天背诵生词数:'+str(todayNW)+\
                         '\n今天复习单词数:'+str(todayOW)+\
                         '\nTotal:'+str(todayNW+todayOW))
@@ -492,7 +549,7 @@ def Rrun2():
         #print(testword.words)
         Rinp1.delete(0, END)  # 清空输入
         Rv.set(testword.chinese+'     '+testword.POS+'     '+'出自：'+testword.wordlist)
-        Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,2))+' 加入时间:'+str(testword.create_time))
+        Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,3))+' 加入时间:'+str(testword.create_time))
         Rv3.set("剩余单词数:"+str(len(tlearn)))
 
 def FindandRemove(list1,target):
@@ -502,6 +559,11 @@ def FindandRemove(list1,target):
 
 def RRemoveWords(x):#return if a new word
     global testword,state,flag_repete,oldTlearn,newTlearn,repTlearn,tlearn
+    
+    if ISREVIEW:
+        tlearn.remove(testword)
+        return 'rev'
+    
     if(len(newTlearn)>0):
         a=FindandRemove(newTlearn,testword)
         newTlearn.remove(a)
@@ -520,6 +582,11 @@ def RRemoveWords(x):#return if a new word
 
 def RChooseWords():
     global testword,state,flag_repete,oldTlearn,newTlearn,repTlearn,tlearn
+    if ISREVIEW:
+        randomnum=random.randint(0,len(tlearn)-1)
+        testword=tlearn[randomnum]
+        return
+        
     if flag_repete:
         testword=testword
     else:
