@@ -11,8 +11,9 @@ NONE=0
 FILLPOS=1
 FILLALL=2
 class ImportXlsx():
-    def __init__(self,translateMode=NONE):   
-        open('ImportWordsList.wl','w')
+    def __init__(self,translateMode=NONE,fileName:str ='ImportWordsList'):   
+        self.fileName=fileName
+        open(self.fileName+'.wl','w')
         self.TotalList=[[],{'version':LOCAL_SOFTWARE_VERSION,'num_version':LOCAL_NUM_VERSION}]
         self.app=xw.App(visible=True,add_book=False)
         self.start_open_time=time.time()
@@ -37,7 +38,7 @@ class ImportXlsx():
                 chi=self.sht.range('B'+str(i+2)).value
             self.addWords(eng,chi,pos)
             
-        savefileP('ImportWordsList',self.TotalList)
+        savefileP(self.fileName,self.TotalList)
 
     def getWordsNum(self,l='A'):
         for i in range(MAXNUM):
@@ -45,11 +46,12 @@ class ImportXlsx():
                 return i-1
 
     def addWords(self,eng,chi,pos):
-        self.TotalList[0].append(Word(words=eng,chinese=chi,create_time=today_date,forget_time=today_date,wordlist='ImportWordsList',POS=pos))
+        self.TotalList[0].append(Word(words=eng,chinese=chi,create_time=today_date,forget_time=today_date,wordlist=self.fileName,POS=pos))
         
     def __del__(self):
         self.wb.close()
         self.app.quit()
-ImportXlsx(translateMode=FILLPOS)
+if __name__ == '__main__':
+    ImportXlsx(translateMode=FILLPOS,fileName='ScM1 U3')
 
 #重命名单词表时赋值给单词

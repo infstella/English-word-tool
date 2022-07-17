@@ -480,6 +480,7 @@ def Rrun1():
             if flag_repete:
                 flag_repete=False
                 Rv.set('正确重复:）')  
+                flag_repete=False
             else:
                 r=RRemoveWords(testword)
                 Rv.set('正确:）')
