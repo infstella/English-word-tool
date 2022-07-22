@@ -9,6 +9,7 @@ import time,pickle,json,os
 from WordPattern import *
 import sys
 from Youdao_Pronunciation import youdao
+from delta_time import DeltaTime
 
 #from win32com.client import constants
 #import win32com.client 
@@ -102,8 +103,9 @@ def PrintLog(content,IsTime=True,logName='Default.log',IsReflash=False):
         f2.close()
 
     f2 = open(logName, 'a')
-    nowTime=str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-    f2.write(nowTime+':    '+str(content)+'\n')
+    if IsTime:
+        nowTime=str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        f2.write(nowTime+':    '+str(content)+'\n')
     f2.close()
 
 def loadfile(filename):
@@ -162,7 +164,7 @@ def checkinit():
     try:
         f = open('config.json', 'r')
     except:
-        x={"Old": "0", "New": "0", "wordlist": "", "time": 0, "todayNewWords": 0, "todayOldWords": 0,"reviewList": "","reviewMode": False}#初始化
+        x={"Old": "0", "New": "0", "wordlist": "", "time": 0, "todayNewWords": 0, "todayOldWords": 0,"todayPreviewWords": 0,"reviewList": "","reviewMode": False}#初始化
         open('config.json','w')
         b = json.dumps(x)
         f2 = open('config.json', 'w')
@@ -238,21 +240,42 @@ def Asavefile():
             pickle.dump(TotalList, fp)
 
 def checkforget():
+    words_small=0
+    words_total=0
+    words_zero=0
     
+    delta_time_all=DeltaTime()
+    delta_time_all.reset()
     t=int(config['time'])
-    d=config['wordlist']
-    d=list(d.split(','))
-    
-    
+    de=config['wordlist']
+    de=list(de.split(','))
+    delta_time=DeltaTime()
+    delta_time.reset()
 
     if timedate != t and config['wordlist']!='':
-        PrintLog('',logName='checkforget.log',IsReflash=True)
+        #PrintLog('',logName='checkforget.log',IsReflash=True)
+        PrintLog('写入历史记录',logName='checkforget.log',IsReflash=True)
+        history_json=loadjson(json_name='words_history.json')
+        history_json["NewWords"]=history_json["NewWords"]+config["todayNewWords"]
+        history_json["OldWords"]=history_json["OldWords"]+config["todayOldWords"]
+        history_json["PreviewWords"]=history_json["PreviewWords"]+config["todayPreviewWords"]
+        savejson(history_json,json_name='words_history.json')
+        PrintLog(('%'+str(config['time'])+'-'+str(timedate)+'%'),logName='words_history.log')
+        
+        str1=("距上次新增生词："+str(config["todayNewWords"])+' 共计生词：'+str(history_json["NewWords"]))
+        str2=("距上次新增复习单词："+str(config["todayOldWords"])+' 共计复习单词：'+str(history_json["OldWords"]))
+        PrintLog(str1,logName='words_history.log')
+        PrintLog(str2,logName='words_history.log')
+        PrintLog('写入历史记录完成',logName='checkforget.log',IsReflash=True)
         
         config['todayNewWords']=0
         config['todayOldWords']=0
+        config['todayPreviewWords']=0
         
         config['time']=timedate
-        for i in d:#i: file name
+        for i in de:#i: file name
+            
+            
             
             c=loadfileP(i)#c:file object
             k=loadjson(json_name='remember_weight.json')
@@ -267,19 +290,29 @@ def checkforget():
                 cachenum=iii.remember_rate
                 d= 1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )
                 iii.remember_rate=iii.remember_rate*  d#update remenber rate
+                words_total+=1
                 if 0.01<iii.remember_rate<=0.08:
                     iii.remember_rate=0.08
                     PrintLog(str('SMALL:'+str(iii.remember_rate*d)),logName='checkforget.log')
+                    words_small+=1
                 if iii.remember_rate<0:
                     iii.remember_rate=0
                     PrintLog(str('ZERO:'+str(iii.remember_rate*d)),logName='checkforget.log')
+                    words_zero+=1
                 PrintLog((str(iii.words)+' '+str(d)+': '+str(cachenum)+'-->'+str(iii.remember_rate)),logName='checkforget.log')
+                
+                if delta_time.getDeltaTime()>=1:
+                    print('checkforget: ',de.index(i),'/',len(de),' ',c[0].index(iii)+1,'/',len(c[0]))
+                    delta_time.reset()
                 
                     
             savefileP(i,c)
             #with open('wordlist//'+i, 'w+b') as fp: # 把 t 对象存到文件中
             #    pickle.dump(c, fp)
         savejson(config)
+        print('Choosing words completed, take',delta_time_all.getDeltaTime(),'second.')
+        print('All words: ',words_total,'Small words: ',words_small,'Zero words: ',words_zero)
+    
 
 def ResetWordlist():#当文件名发生更改时，同步到单词表的单词
     wordlistname=get_all_file()
@@ -312,11 +345,6 @@ class SpeakWords_T (threading.Thread):#发音线程类
         #open(soundPath)
         #os.system(soundPath)
         try:
-            #pygame.mixer.init()                           # 初始化
-            #track = pygame.mixer.music.load(soundPath)   # 加载音乐文件
-            #pygame.mixer.music.play()
-            
-            
             playsound.playsound(soundPath)
         except Exception as ide: 
             '''美式英式总有一个是'''
@@ -336,7 +364,7 @@ class SpeakWords_T (threading.Thread):#发音线程类
             except Exception as ide:
                 
                 #print(f'Error: {ide}')
-                print('Info:Cannot Play Sound. Filename:'+self.words)
+                print('Warning: Cannot Play Sound. Filename:'+self.words)
         
         
         

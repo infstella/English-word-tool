@@ -52,6 +52,6 @@ class ImportXlsx():
         self.wb.close()
         self.app.quit()
 if __name__ == '__main__':
-    ImportXlsx(translateMode=FILLPOS,fileName='ScM1 U3')
+    ImportXlsx(translateMode=FILLPOS,fileName='ScM1 U5')
 
 #重命名单词表时赋值给单词

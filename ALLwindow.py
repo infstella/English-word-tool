@@ -7,9 +7,10 @@ import upgrade
 from tkinter import *
 from WordPattern import *
 from tkinter import ttk
-from unit import *
+from win_logic import *
 from tkinter import scrolledtext
 from Youdao_Translate import YoudaoTranslate
+
 
 start()
 upgrade.Up_start()
@@ -20,6 +21,7 @@ CACHE_NUM=0
 frame1 = Frame(root)
 frame2 = Frame(root)
 frame3 = Frame(root)
+global setting
 setting=loadjson()
 trans=YoudaoTranslate()
 ISREVIEW=False
@@ -340,7 +342,7 @@ Siv4_review=StringVar()
 Siv4_review.set(setting['reviewList'])
 
 def cw():#create test wordlist
-    global tlearn,oldTlearn,newTlearn,repTlearn,ISREVIEW
+    global tlearn,oldTlearn,newTlearn,repTlearn,ISREVIEW,setting
     setting=loadjson()
     if SCheckVar1.get()==1:
         a=[]
@@ -356,7 +358,7 @@ def cw():#create test wordlist
         ISREVIEW=True
         tlearn=a
         print('Review Mode ON')
-        print('Choosing words completed')
+        #print('Choosing words completed')
         return
         
     a=[]
@@ -373,7 +375,7 @@ def cw():#create test wordlist
     tlearn+=chooseWords(int(setting['New']),CHOOSE_NEW,a)
     newTlearn=chooseWords(int(setting['New']),CHOOSE_NEW,a)
     repTlearn=chooseWords(int(setting['New']),CHOOSE_NEW,a)
-    print('Choosing words completed')
+    #print('Choosing words completed')
 
 def Srun1():
     global setting
@@ -466,8 +468,22 @@ def OutputErrorWords(x):
 cw()
 global comboCount
 comboCount=0
+
+def showInfo(Isload:bool=True):
+    global setting
+    if Isload:
+        setting=loadjson() 
+    todayNW=setting['todayNewWords']
+    todayOW=setting['todayOldWords']
+    todayPW=setting['todayPreviewWords']
+    Rv5.set('combo: '+str(comboCount)+\
+                        '\n今天预习生词数:'+str(todayPW)+\
+                        '\n今天背诵生词数:'+str(todayNW)+\
+                        '\n今天复习单词数:'+str(todayOW)+\
+                        '\nTotal:'+str(todayNW+todayOW))
+
 def Rrun1():
-    global testword,state,comboCount
+    global testword,state,comboCount,setting
     global flag_repete
     state=1
     if len(tlearn)==0:
@@ -488,6 +504,7 @@ def Rrun1():
                 setting=loadjson()
                 todayNW=setting['todayNewWords']
                 todayOW=setting['todayOldWords']
+                todayPW=setting['todayPreviewWords']
                 #tlearn.remove(testword)
                 
                 if r!='new':
@@ -495,8 +512,10 @@ def Rrun1():
                         todayNW+=1
                     else:
                         todayOW+=1
+                elif r=='new':
+                    todayPW+=1
                 
-                if r=='new' or r=='old':
+                if r=='rep' or r=='old':
                     testword.remember_rate=1
                     Afind(testword)
                     
@@ -504,12 +523,10 @@ def Rrun1():
                     
                 setting['todayNewWords']=todayNW
                 setting['todayOldWords']=todayOW
+                setting['todayPreviewWords']=todayPW
                 savejson(setting)  
+                showInfo(False)
                 
-                Rv5.set('combo: '+str(comboCount)+\
-                        '\n今天背诵生词数:'+str(todayNW)+\
-                        '\n今天复习单词数:'+str(todayOW)+\
-                        '\nTotal:'+str(todayNW+todayOW))
                 
         else:
             Rv.set('错误:（，正确答案是 '+str(testword.words))
@@ -523,20 +540,12 @@ def Rrun1():
                 OutputErrorWords(testword)
                 tlearn.remove(testword)
             comboCount=0
-            setting=loadjson()
-            todayNW=setting['todayNewWords']
-            todayOW=setting['todayOldWords']
-            Rv5.set('combo: '+str(comboCount)+\
-                        '\n今天背诵生词数:'+str(todayNW)+\
-                        '\n今天复习单词数:'+str(todayOW)+\
-                        '\nTotal:'+str(todayNW+todayOW))
+            showInfo()
+            
             if ISREVIEW:
                 todayOW+=1
                 savejson(setting)  
-                Rv5.set('combo: '+str(comboCount)+\
-                        '\n今天背诵生词数:'+str(todayNW)+\
-                        '\n今天复习单词数:'+str(todayOW)+\
-                        '\nTotal:'+str(todayNW+todayOW))
+                showInfo(False)
     
 
 def Rrun2():
@@ -551,7 +560,9 @@ def Rrun2():
         Rinp1.delete(0, END)  # 清空输入
         Rv.set(testword.chinese+'     '+testword.POS+'     '+'出自：'+testword.wordlist)
         Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,3))+' 加入时间:'+str(testword.create_time))
-        Rv3.set("剩余单词数:"+str(len(tlearn)))
+        Rv3.set("剩余单词数:"+str(len(tlearn))\
+                +"\n剩余预习单词数:"+str(len(newTlearn))
+            )
 
 def FindandRemove(list1,target):
     for i in list1:
@@ -697,5 +708,6 @@ Aflashtext()
 #AupdateTime()
 RupdateTime()
 AAutoSave()
+showInfo()
 #savefile() 
 print()

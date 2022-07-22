@@ -406,6 +406,7 @@ English-word-tool.spec
 
 #custom project
 test.py
+test2.py
 test.spec
 config.json
 wordlist/
