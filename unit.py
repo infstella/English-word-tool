@@ -1,3 +1,4 @@
+import math
 import threading
 import playsound
 #from playsound import playsound
@@ -30,6 +31,14 @@ CHOOSE_OLD=1
 CHOOSE_NEW=2
 LOCAL_SOFTWARE_VERSION='v0.2'
 LOCAL_NUM_VERSION=2
+
+WRONG_RATE=[0.6,1,1.2,1.3,1.5,1.7]
+TIP_RATE=[0,0.25,0.35,0.4]
+REPEAT_NEEDED=0.49
+
+FROGET_DEBUG_MODE=False
+
+#0-1.9
 yd=youdao()
 
 #yd=None
@@ -214,7 +223,9 @@ def get_all_file():
                 wordlistname.append(item.split('.')[0]) #os.walk()所在目录的所有非目录文件名
         a=dirs
         a=roott
-    return list(set(wordlistname))
+    a=list(set(wordlistname))
+    a.sort()
+    return a
     
 #get_all_file()
 def start():
@@ -252,27 +263,30 @@ def checkforget():
     delta_time=DeltaTime()
     delta_time.reset()
 
-    if timedate != t and config['wordlist']!='':
+    if (timedate != t and config['wordlist']!='') or FROGET_DEBUG_MODE:
+        if FROGET_DEBUG_MODE:
+            input("警告：进入DEBUG模式，请确认文件已备份。按下\'Enter\'以继续。 \nWarning: Entering DEBUG mode, ensure that the file has been backed up. press \'Enter\' to continue.")
         #PrintLog('',logName='checkforget.log',IsReflash=True)
-        PrintLog('写入历史记录',logName='checkforget.log',IsReflash=True)
-        history_json=loadjson(json_name='words_history.json')
-        history_json["NewWords"]=history_json["NewWords"]+config["todayNewWords"]
-        history_json["OldWords"]=history_json["OldWords"]+config["todayOldWords"]
-        history_json["PreviewWords"]=history_json["PreviewWords"]+config["todayPreviewWords"]
-        savejson(history_json,json_name='words_history.json')
-        PrintLog(('%'+str(config['time'])+'-'+str(timedate)+'%'),logName='words_history.log')
-        
-        str1=("距上次新增生词："+str(config["todayNewWords"])+' 共计生词：'+str(history_json["NewWords"]))
-        str2=("距上次新增复习单词："+str(config["todayOldWords"])+' 共计复习单词：'+str(history_json["OldWords"]))
-        PrintLog(str1,logName='words_history.log')
-        PrintLog(str2,logName='words_history.log')
-        PrintLog('写入历史记录完成',logName='checkforget.log',IsReflash=True)
-        
-        config['todayNewWords']=0
-        config['todayOldWords']=0
-        config['todayPreviewWords']=0
-        
-        config['time']=timedate
+        if not FROGET_DEBUG_MODE:
+            PrintLog('写入历史记录',logName='checkforget.log',IsReflash=True)
+            history_json=loadjson(json_name='words_history.json')
+            history_json["NewWords"]=history_json["NewWords"]+config["todayNewWords"]
+            history_json["OldWords"]=history_json["OldWords"]+config["todayOldWords"]
+            history_json["PreviewWords"]=history_json["PreviewWords"]+config["todayPreviewWords"]
+            savejson(history_json,json_name='words_history.json')
+            PrintLog(('%'+str(config['time'])+'-'+str(timedate)+'%'),logName='words_history.log')
+            
+            str1=("距上次新增生词："+str(config["todayNewWords"])+' 共计生词：'+str(history_json["NewWords"]))
+            str2=("距上次新增复习单词："+str(config["todayOldWords"])+' 共计复习单词：'+str(history_json["OldWords"]))
+            PrintLog(str1,logName='words_history.log')
+            PrintLog(str2,logName='words_history.log')
+            PrintLog('写入历史记录完成',logName='checkforget.log',IsReflash=True)
+            
+            config['todayNewWords']=0
+            config['todayOldWords']=0
+            config['todayPreviewWords']=0
+            
+            config['time']=timedate
         for i in de:#i: file name
             
             
@@ -288,18 +302,57 @@ def checkforget():
             for iii in c[0]:
                 IsZero=False
                 cachenum=iii.remember_rate
-                d= 1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )
-                iii.remember_rate=iii.remember_rate*  d#update remenber rate
+                
+                wrong_num=iii.wrong_num
+                tip_num=iii.tip_num
+
+                if iii.remember_rate==1:
+                    if wrong_num>=len(WRONG_RATE):
+                        wrong_num=len(WRONG_RATE)-1
+                    if tip_num>=len(TIP_RATE):
+                        tip_num=len(TIP_RATE)-1
+                    iii.wrong_num=0
+                    iii.tip_num=0
+                    
+                else:
+                    wrong_num=1
+                    tip_num=0
+                
+                k_date= 1-(weight*(1- f (timedate-dSTN(iii.forget_time) ) ) )
+                
+                #x_learning=wrong_num+tip_num
+                E=2.72
+                x_learning=WRONG_RATE[wrong_num]+TIP_RATE[tip_num]
+                k_learning=1 * (( ( 1 ) / ( 1+math.pow (E,(x_learning-0.5)) ) )+0.62-1)
+                if iii.remember_rate!=0:
+                    k_finally=k_date+k_learning
+                    if (0.01< k_finally <= 0.08) or (k_finally < 0) :
+                        k_finally = 0.081
+                    if k_finally >= 1:
+                        k_finally = 0.98
+                else:
+                    k_finally=1
+                
+                if iii.remember_rate*k_finally<0.08 and 0.01<iii.remember_rate*k_finally and iii.remember_rate==1:
+                    iii.remember_rate=0.081
+                else:
+                    iii.remember_rate=iii.remember_rate*k_finally#update remenber rate
+                
                 words_total+=1
-                if 0.01<iii.remember_rate<=0.08:
+                if 0.01<iii.remember_rate and iii.remember_rate<=0.08:
                     iii.remember_rate=0.08
-                    PrintLog(str('SMALL:'+str(iii.remember_rate*d)),logName='checkforget.log')
+                    PrintLog(str('SMALL:'+str(iii.remember_rate*k_finally)),logName='checkforget.log')
                     words_small+=1
                 if iii.remember_rate<0:
                     iii.remember_rate=0
-                    PrintLog(str('ZERO:'+str(iii.remember_rate*d)),logName='checkforget.log')
+                    PrintLog(str('ZERO:'+str(iii.remember_rate*k_finally)),logName='checkforget.log')
                     words_zero+=1
-                PrintLog((str(iii.words)+' '+str(d)+': '+str(cachenum)+'-->'+str(iii.remember_rate)),logName='checkforget.log')
+                    
+                c2=(str(iii.words)+(20-len(str(iii.words)))*' ')
+                c3=(str(round(k_date,5)) + (8-len(str(round(k_date,5))))*' ')
+                c4=(str(wrong_num)+' '+str(tip_num)+' '+str(round(k_learning,5)) + (8-len(str(round(k_learning,5))))*' '  )
+                c5=(str(round(k_finally,5))+(8-len(str(round(k_finally,5))))*' ')
+                PrintLog((c2+' '+c5+' '+c4+' '+c3+': '+str(round(cachenum,5))+'-->'+str(round(iii.remember_rate,5))),logName='checkforget.log')
                 
                 if delta_time.getDeltaTime()>=1:
                     print('checkforget: ',de.index(i),'/',len(de),' ',c[0].index(iii)+1,'/',len(c[0]))

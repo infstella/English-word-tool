@@ -1,4 +1,4 @@
-import winsound
+#import winsound
 #from playsound import playsound
 
 #Thanks for https://blog.csdn.net/humanking7/article/details/88630856

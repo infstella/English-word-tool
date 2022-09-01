@@ -16,3 +16,5 @@ def winCommand(*command):
             logger.error(exceptionMessage)
             raise PlaysoundException(exceptionMessage)
         return buf.value
+
+However, there're still some error in this model.

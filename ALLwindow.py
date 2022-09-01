@@ -385,11 +385,11 @@ def Srun1():
     setting['reviewList']=Sinp4_review.get()
     savejson(setting)
     cw()
-    print()
+    print('Confirmed')
 
 def Sgo(x):
-    print()
     Siv3.set(Siv3.get()+','+Scomboxlist.get())
+    print('Scomboxlist has been choosen')
 
 
 Scomvalue=StringVar()#窗体自带的文本，新建一个值
@@ -476,7 +476,7 @@ def showInfo(Isload:bool=True):
     todayNW=setting['todayNewWords']
     todayOW=setting['todayOldWords']
     todayPW=setting['todayPreviewWords']
-    Rv5.set('combo: '+str(comboCount)+\
+    Rv5_TodayProgress.set('combo: '+str(comboCount)+\
                         '\n今天预习生词数:'+str(todayPW)+\
                         '\n今天背诵生词数:'+str(todayNW)+\
                         '\n今天复习单词数:'+str(todayOW)+\
@@ -487,7 +487,7 @@ def Rrun1():
     global flag_repete
     state=1
     if len(tlearn)==0:
-        Rv3.set('今天背完啦')
+        Rv3_RemainingWords.set('今天背完啦')
     else:
         a = Rinp1.get()
         #print(testword.words)
@@ -497,6 +497,7 @@ def Rrun1():
                 flag_repete=False
                 Rv.set('正确重复:）')  
                 flag_repete=False
+                
             else:
                 r=RRemoveWords(testword)
                 Rv.set('正确:）')
@@ -516,17 +517,15 @@ def Rrun1():
                     todayPW+=1
                 
                 if r=='rep' or r=='old':
+                        
                     testword.remember_rate=1
                     Afind(testword)
-                    
-                
                     
                 setting['todayNewWords']=todayNW
                 setting['todayOldWords']=todayOW
                 setting['todayPreviewWords']=todayPW
                 savejson(setting)  
                 showInfo(False)
-                
                 
         else:
             Rv.set('错误:（，正确答案是 '+str(testword.words))
@@ -535,6 +534,8 @@ def Rrun1():
                 #testword. remember_rate=0
                 Afind(testword)
                 SpeakWords(testword.words)
+                if flag_repete==False:
+                    testword.wrong_num+=1
                 flag_repete=True
             else:
                 OutputErrorWords(testword)
@@ -546,21 +547,25 @@ def Rrun1():
                 todayOW+=1
                 savejson(setting)  
                 showInfo(False)
+            
+        Rv2_QuickSet(testword)
     
+def Rv2_QuickSet(testword):
+    Rv2_VocabularyInfo.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,3))+' 加入时间:'+str(testword.create_time)+' 错误次数: '+str(testword.wrong_num)+' 提示次数: '+str(testword.tip_num))
 
 def Rrun2():
     global testword,state
     state=0
     global flag_repete
     if len(tlearn)==0:
-        Rv3.set('今天背完啦')
+        Rv3_RemainingWords.set('今天背完啦')
     else:
         RChooseWords()
         #print(testword.words)
         Rinp1.delete(0, END)  # 清空输入
         Rv.set(testword.chinese+'     '+testword.POS+'     '+'出自：'+testword.wordlist)
-        Rv2.set('上次记录日期:'+str(testword.forget_time)+' 记忆率:'+str(round(testword.remember_rate,3))+' 加入时间:'+str(testword.create_time))
-        Rv3.set("剩余单词数:"+str(len(tlearn))\
+        Rv2_QuickSet(testword)
+        Rv3_RemainingWords.set("剩余单词数:"+str(len(tlearn))\
                 +"\n剩余预习单词数:"+str(len(newTlearn))
             )
 
@@ -618,18 +623,19 @@ def RChooseWords():
             if i.words==testword.words:
                 testword=i
                 return
-    print()
+    #print('randomly choosing words completed')
 
-def Rrun3():
+def Rrun3_Easy():
     #tlearn.remove(testword)
     #testword.remember_rate=1
     #Afind(testword)
     Rv.set('This function is banned')
     
-def Rrun4():
+def Rrun4_SpeakWords():
     if testword == None:
         return
     SpeakWords(testword.words)
+    testword.tip_num+=1
 
 
     
@@ -658,14 +664,14 @@ def RupdateTime():
 
 Rv = StringVar()
 Rv.set("Hello")
-Rv2 = StringVar()
-Rv2.set("Hello")
-Rv3 = StringVar()
-Rv3.set("Hello")
+Rv2_VocabularyInfo = StringVar()
+Rv2_VocabularyInfo.set("Hello")
+Rv3_RemainingWords = StringVar()
+Rv3_RemainingWords.set("Hello")
 Rv4 = StringVar()
 Rv4.set("Hello")
-Rv5 = StringVar()#combo
-Rv5.set('combo: '+\
+Rv5_TodayProgress = StringVar()#combo
+Rv5_TodayProgress.set('combo: '+\
         '\n今天背诵生词数:'+\
         '\n今天复习单词数:'+\
         '\nTotal:')
@@ -673,16 +679,16 @@ Rv5.set('combo: '+\
 Rlb1 = Label(frame2, textvariable=Rv,font=FONT)
 Rlb1.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
 
-Rlb2 = Label(frame2, textvariable=Rv2,font=FONT)
+Rlb2 = Label(frame2, textvariable=Rv2_VocabularyInfo,font=FONT)
 Rlb2.place(relx=0.1, rely=0.8, relwidth=0.8, relheight=0.1)
 
-Rlb3 = Label(frame2, textvariable=Rv3,font=FONT)
+Rlb3 = Label(frame2, textvariable=Rv3_RemainingWords,font=FONT)
 Rlb3.place(relx=0.1, rely=0.6, relwidth=0.8, relheight=0.1)
 
 Rlb4 = Label(frame2, textvariable=Rv4,font=FONT)
 Rlb4.place(relx=0.45, rely=0.3, relwidth=0.1, relheight=0.1)
 
-Rlb5 = Label(frame2, textvariable=Rv5,font=INFOFONT)#Information
+Rlb5 = Label(frame2, textvariable=Rv5_TodayProgress,font=INFOFONT)#Information
 Rlb5.place(relx=0.85, rely=0, relwidth=0.15, relheight=0.2)
 
 Rinp1 = Entry(frame2,font=font)
@@ -694,10 +700,10 @@ Rbtn1.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
 Rbtn2 = Button(frame2, text='下一个', command=Rrun2,font=font)
 Rbtn2.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
 
-Rbtn3 = Button(frame2, text='So Easy', command=Rrun3,font=font)
+Rbtn3 = Button(frame2, text='So Easy', command=Rrun3_Easy,font=font)
 Rbtn3.place(relx=0.6, rely=0.5, relwidth=0.3, relheight=0.1)
 
-Rbtn4 = Button(frame2, text='播放读音', command=Rrun4,font=font)
+Rbtn4 = Button(frame2, text='播放读音', command=Rrun4_SpeakWords,font=font)
 Rbtn4.place(relx=0.8, rely=0.2, relwidth=0.1, relheight=0.1)
 
 
@@ -710,4 +716,4 @@ RupdateTime()
 AAutoSave()
 showInfo()
 #savefile() 
-print()
+print('UI and logic has been loaded')

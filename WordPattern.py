@@ -1,5 +1,5 @@
 class Word():
-    def __init__(self,words,chinese,create_time,forget_time,POS='U',remember_rate=0,wordlist=''):#POS:U=unknow,P=phrase
+    def __init__(self,words,chinese,create_time,forget_time,POS='U',remember_rate=0,wordlist='',wrong_num=0,tip_num=0):#POS:U=unknow,P=phrase
         self.words=words
         self.create_time=create_time
         self.chinese=chinese
@@ -7,6 +7,8 @@ class Word():
         self.remember_rate=remember_rate
         self.POS=POS
         self.wordlist=wordlist
+        self.wrong_num=wrong_num
+        self.tip_num=tip_num
 
     def getwords(self):
         return self.words
